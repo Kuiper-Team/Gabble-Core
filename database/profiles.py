@@ -1,4 +1,3 @@
-import sqlite3
 from sys import path
 
 path.append("..")
