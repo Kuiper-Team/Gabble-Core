@@ -1,4 +1,4 @@
-#NOT: [7203, 7214] aralığındaki portlar bilinen başka hizmetler tarafından kullanılmıyor.
+#[7203, 7214] aralığındaki portlar bilinen başka hizmetler tarafından kullanılmıyor.
 app_name = "Sohbet"
 
 class Channel:
