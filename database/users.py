@@ -2,6 +2,8 @@ import sqlite3
 from datetime import datetime
 from sys import path
 
+from utilities.generation import sha_aes_encrypt
+
 path.append("..")
 
 import utilities.generation as generation
@@ -14,7 +16,7 @@ cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc IN
 def create_user(username, password): #profile.db de katılacak.
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), hash, database.default_settings, None))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), hash, sha_aes_encrypt(database.default_settings, hash[:16], hash[16:]), None))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
