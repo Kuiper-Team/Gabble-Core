@@ -19,7 +19,7 @@ async def stream(ws):
         if received == "Q":
             break
         elif validation.message_id(received):
-            #Kimlik doğrulamasından geçilmeden channelde mesaj gönderilemeyecek.
+            #Kimlik doğrulamasından geçilmeden channelde mesaj gönderilemeyecek. (timed_keys)
             #İlk atılan mesaj geçerli bir giriş anahtarıysa devam edecek, değilse WebSocket sunucusu bağlantıyı koparacak.
             #Giriş anahtarı formatı: {kanal ID, kullanıcı adı, (belirlenen zaman damgasına kadar geçerli olacak) anahtar}
             await ws.send(received[44:])

@@ -8,5 +8,4 @@ channel = Channel()
 
 class Database:
     file_name = "database"
-    default_user_settings = "000"
 database = Database()
