@@ -1,5 +1,8 @@
 from calendar import isleap
+from datetime import datetime
 from uuid import UUID
+
+import generation
 
 def uuid_v4(uuid_str):
     object = None
@@ -45,3 +48,6 @@ def message_id(message):
         else: return False
     except ValueError:
         return False
+
+def is_timestamp_valid(timestamp):
+    return timestamp > generation.unix_timestamp(datetime.now())

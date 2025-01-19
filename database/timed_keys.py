@@ -26,7 +26,7 @@ def create_timed_key(username, password, expiration): #Oturum açmayı sağlayan
             uuid = uuid4().hex
 
         cursor.execute("INSERT INTO timed_keys VALUES (?, ?, ?)", (uuid, expiration, hash))
-    except sqlite3.IntegrityError:
+    except sqlite3.OperationalError:
         raise Exception("failedinsert")
     else:
         connection.commit()

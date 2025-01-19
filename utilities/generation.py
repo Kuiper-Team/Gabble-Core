@@ -28,9 +28,8 @@ def hashed_password(password):
 def sha_aes_encrypt(text, key, iv): #Şifrenin ilk 16 karakterini IV olarak kullan. IV değeri string olarak girilip daha sonra bayta çevrilecektir.
     sha = sha256(key.encode("utf-8")).digest() #32 bayt
     cipher = AES.new(key=sha, mode=AES.MODE_CFB, iv=iv.encode("utf-8"))
-    text_b = text.encode("utf-8")
 
-    return cipher.encrypt(text_b)
+    return cipher.encrypt(text.encode("utf-8"))
 
 def sha_aes_decrypt(encrypted, key, iv):
     sha = sha256(key.encode("utf-8")).digest()  # 32 bayt
