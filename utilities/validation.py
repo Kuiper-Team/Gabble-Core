@@ -1,8 +1,10 @@
+import sqlite3
 from calendar import isleap
 from datetime import datetime
 from uuid import UUID
 
 import generation
+from database.connection import connection, cursor
 
 def uuid_v4(uuid_str):
     object = None
@@ -49,5 +51,11 @@ def message_id(message):
     except ValueError:
         return False
 
-def is_timestamp_valid(timestamp):
+def timestamp(timestamp):
     return timestamp > generation.unix_timestamp(datetime.now())
+
+def are_credentials_correct(username, password):
+    try:
+        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,))
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
