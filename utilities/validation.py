@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 import generation
-from config import messages
+from config import message
 from database.connection import connection, cursor
 
 def uuid_v4(uuid_str):
@@ -29,7 +29,7 @@ def message_id(message):
     try:
         length = len(message)
         if (
-            64 < length <= messages.character_limit + 64 and
+            96 < length <= messages.character_limit + 96 and
             uuid_v7(message[:33]) and
             uuid_v7(message[33:65])
         ):

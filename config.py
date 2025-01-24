@@ -13,6 +13,6 @@ class Database:
     default_group_pm = ""
 database = Database()
 
-class Messages:
-    character_limit = 4032
-messages = messages()
+class Message:
+    character_limit = 4000
+message = Message()

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sqlite3
 import websockets
 from sys import path
 
@@ -11,6 +12,7 @@ import utilities.validation as validation
 from utilities.check_ports import check_port
 from utilities.uuidv7 import uuid_v7
 from config import user_connection
+from database.connection import cursor
 
 script_name = os.path.basename(__file__)
 
@@ -23,11 +25,18 @@ async def stream(ws):
             if received == "Q":
                 break
             elif validation.message_id(received):
-                #Mesaj formatı: room_uuid (boşluksuz) (32 bayt) + channel_uuid (boşluksuz) (32 bayt) + message
-                uuid = uuid_v7().hex
-                messages.create(received[65:], uuid, received[:33], received[33:65])
+                hash = None
+                try:
+                    hash = cursor.execute("SELECT hash FROM session_uuids WHERE uuid = ?", (received[:33],)).fetchone()[0]
+                except sqlite3.OperationalError:
+                    await ws.send("incorrectsessionuuid")
+                    break
+                else:
+                    #Mesaj formatı: session_uuid (boşluksuz) + room_uuid (boşluksuz) (32 bayt) + channel_uuid (boşluksuz) (32 bayt) + message
+                    uuid = uuid_v7().hex
+                    messages.create(received[96:], uuid, received[32:64], received[64:96], hash)
 
-                await ws.send(uuid)
+                    await ws.send(uuid)
             else:
                 await ws.send("invalidmessage")
                 break
