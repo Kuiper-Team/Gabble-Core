@@ -17,9 +17,9 @@ def create(title, group_uuid, type, settings, permissions_map, tags, hash):
     else:
         connection.commit()
 
-def delete(uuid):
+def delete(uuid, group_uuid):
     try:
-        cursor.execute("DELETE FROM channels WHERE uuid = ?", (uuid,))
+        cursor.execute("DELETE FROM channels WHERE uuid = ? AND group_uuid = ?", (uuid, group_uuid))
     except sqlite3.OperationalError:
         raise Exception("nochannel")
     else:
