@@ -60,9 +60,9 @@ def check_credentials(username, password):
     except sqlite3.OperationalError:
         raise Exception("nouser")
 
-def check_session_uuid(session_uuid):
+def check_session_uuid(uuid):
     try:
-        expiry = cursor.execute("SELECT expiry FROM session_uuids WHERE uuid = ?", (session_uuid,)).fetchone()[0]
+        expiry = cursor.execute("SELECT expiry FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()[0]
 
         return timestamp(expiry)
     except sqlite3.OperationalError:

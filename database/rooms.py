@@ -61,7 +61,7 @@ def apply_config(title, uuid, settings, permissions_map):
 def add_member(new_member, uuid, hash):
     members = None
     try:
-        members = generation.aes_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)), hash)
+        members = generation.aes_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash)
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
