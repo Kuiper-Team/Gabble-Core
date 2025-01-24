@@ -25,7 +25,7 @@ def delete(uuid):
     else:
         connection.commit()
 
-def apply_config(uuid, title, settings, permissions_map, tags):
+def apply_config(title, uuid, settings, permissions_map, tags):
     try:
         cursor.execute("UPDATE channels SET title = ?, settings = ?, permissions_map = ?, tags = ?  WHERE uuid = ?", (title, settings, permissions_map, tags, uuid))
     except sqlite3.OperationalError:
