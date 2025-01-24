@@ -9,9 +9,9 @@ from utilities.uuidv7 import uuid_v7
 
 cursor.execute("CREATE TABLE IF NOT EXISTS messages (message TEXT NOT NULL, uuid TEXT NOT NULL, room_uuid TEXT NOT NULL, channel_uuid TEXT NOT NULL, PRIMARY KEY (uuid))")
 
-def create(message, room_uuid, channel_uuid, hash):
+def create(message, uuid, room_uuid, channel_uuid, hash):
     try:
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid_v7().hex, room_uuid, channel_uuid))
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid, room_uuid, channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:

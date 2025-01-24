@@ -13,7 +13,7 @@ cursor.execute("CREATE TABLE IF NOT EXISTS channels (title TEXT NOT NULL, uuid T
 
 def delete(uuid, room_uuid):
     try:
-        cursor.execute("DELETE FROM channels WHERE uuid = ? AND group_uuid = ?", (uuid, room_uuid))
+        cursor.execute("DELETE FROM channels WHERE uuid = ? AND room_uuid = ?", (uuid, room_uuid))
     except sqlite3.OperationalError:
         raise Exception("nochannel")
     else:

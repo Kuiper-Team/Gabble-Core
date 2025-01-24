@@ -12,3 +12,7 @@ class Database:
     default_channel_pm = ""
     default_group_pm = ""
 database = Database()
+
+class Messages:
+    character_limit = 4032
+messages = messages()
