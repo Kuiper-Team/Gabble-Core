@@ -36,3 +36,14 @@ def apply_config(title, uuid, settings, permissions_map):
         raise Exception("nogroup")
     else:
         connection.commit()
+
+def add_channel(uuid, channel):
+    pass #Hazır değil.
+
+def apply_config(title, uuid, settings, permissions_map):
+    try:
+        cursor.execute("UPDATE groups SET title = ?, settings = ?, permissions_map = ?  WHERE uuid = ?", (title, settings, permissions_map, uuid))
+    except sqlite3.OperationalError:
+        raise Exception("nogroup")
+    else:
+        connection.commit()
