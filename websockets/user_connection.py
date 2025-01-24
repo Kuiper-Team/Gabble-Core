@@ -1,4 +1,4 @@
-#Şifreleme yapılacak.
+#BURASI TAMAMLANACAK.
 
 import asyncio
 import websockets

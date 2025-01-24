@@ -54,11 +54,19 @@ def message_id(message):
 def timestamp(timestamp):
     return timestamp > generation.unix_timestamp(datetime.now())
 
-def are_credentials_correct(username, password):
+def check_credentials(username, password):
     try:
-        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,))
+        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
     except sqlite3.OperationalError:
         raise Exception("nouser")
+
+def check_session_uuid(session_uuid):
+    try:
+        expiry = cursor.execute("SELECT expiry FROM session_uuids WHERE uuid = ?", (session_uuid,)).fetchone()[0]
+
+        return timestamp(expiry)
+    except sqlite3.OperationalError:
+        return False
 
 def uuid_timestamp_to_unix(uuid):
     pass #Hazır değil.
