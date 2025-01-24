@@ -27,7 +27,7 @@ async def stream(ws):
             elif validation.message_id(received):
                 hash = None
                 try:
-                    hash = cursor.execute("SELECT hash FROM session_uuids WHERE uuid = ?", (received[:33],)).fetchone()[0]
+                    hash = cursor.execute("SELECT hash FROM session_uuids WHERE uuid = ?", (received[:32],)).fetchone()[0]
                 except sqlite3.OperationalError:
                     await ws.send("incorrectsessionuuid")
                     break
