@@ -1,7 +1,10 @@
+import string
+
 import pyargon2
+import random
 from Crypto.Cipher import AES
 from datetime import datetime
-from hashlib import sha256
+from string import ascii_letters, digits, punctuation
 from uuid import UUID
 
 #Kullanılan şifreleme metotları:
@@ -25,20 +28,26 @@ def hashed_password(password):
 
     return pyargon2.hash(password[:slice_index], password[slice_index:])
 
-def sha_aes_encrypt(text, key, iv): #Şifrenin ilk 16 karakterini IV olarak kullan. IV değeri string olarak girilip daha sonra bayta çevrilecektir.
-    sha = sha256(key.encode("utf-8")).digest() #32 bayt
-    cipher = AES.new(key=sha, mode=AES.MODE_CFB, iv=iv.encode("utf-8"))
+def aes_encrypt(text, hash):
+    cipher = AES.new(key=hash[:16], mode=AES.MODE_CFB, iv=hash[16:].encode("utf-8"))
 
     return cipher.encrypt(text.encode("utf-8"))
 
-def sha_aes_decrypt(encrypted, key, iv):
-    sha = sha256(key.encode("utf-8")).digest()  # 32 bayt
-    cipher = AES.new(key=sha, mode=AES.MODE_CFB, iv=iv.encode("utf-8"))
+def aes_decrypt(encrypted, hash):
+    cipher = AES.new(key=hash[:16], mode=AES.MODE_CFB, iv=hash[16:].encode("utf-8"))
 
     return cipher.decrypt(encrypted).decode("utf-8")
 
-def message_id(time: datetime, user_id: UUID):
+def ws_message(time: datetime, user_id: UUID):
     return add_zeros(time.hour, 2) + add_zeros(time.minute, 2) + add_zeros(time.day, 2) + add_zeros(time.month, 2) + add_zeros(time.year, 4) + user_id.hex
 
 def channel_key(channel_id: UUID, user_id: UUID, login_key: UUID):
     return channel_id.hex + user_id.hex + login_key.hex
+
+scl = string.ascii_letters + string.digits + string.punctuation
+def password(length, character_list=scl):
+    password = ""
+    for character in range(length):
+        password += random.choice(character_list)
+
+    return password

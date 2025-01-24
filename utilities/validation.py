@@ -59,3 +59,6 @@ def are_credentials_correct(username, password):
         return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
+
+def uuid_timestamp_to_unix(uuid):
+    pass #Hazır değil.

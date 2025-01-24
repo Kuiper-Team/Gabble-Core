@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 from sys import path
 
-from utilities.generation import sha_aes_encrypt
+from utilities.generation import aes_encrypt
 
 path.append("..")
 
@@ -10,20 +10,19 @@ import utilities.generation as generation
 from config import database
 from connection import connection, cursor
 
-cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, friends TEXT, PRIMARY KEY (username))") #"friends" ve "settings", "hash" anahtarı kullanılarak AES ile oluşturulan bir şifredir.
-#"hash" ve "settings" birer hash ve "settings", "hash" kullanılarak oluşturulmuş bir hashtır.
+cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, group_settings TEXT, channel_settings TEXT, friends TEXT, PRIMARY KEY (username))")
 
-def create_user(username, password):
+def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), hash, sha_aes_encrypt(database.default_settings, hash[:16], hash[16:]), None))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), hash, aes_encrypt(database.default_user_settings, hash), None, None, None))
         cursor.execute("INSERT INTO profiles VALUES (?, ?, ?)", (username, None, 0))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
         connection.commit()
 
-def delete_user(username):
+def delete(username):
     try:
         cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     except sqlite3.OperationalError:
@@ -36,14 +35,14 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         encrypted_1 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_1,)).fetchone()[0]
         encrypted_2 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_2,)).fetchone()[0]
 
-        friends_1 = generation.sha_aes_decrypt(encrypted_1, hash_1[16:], hash_1[:16])
-        friends_2 = generation.sha_aes_decrypt(encrypted_2, hash_2[16:], hash_2[:16])
+        friends_1 = generation.aes_decrypt(encrypted_1, hash_1)
+        friends_2 = generation.aes_decrypt(encrypted_2, hash_2)
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
         try:
-            new_encrypted_1 = generation.sha_aes_encrypt(friends_1 + "," + username_2, hash_1[16:], hash_1[:16])
-            new_encrypted_2 = generation.sha_aes_encrypt(friends_2 + "," + username_1, hash_2[16:], hash_2[:16])
+            new_encrypted_1 = generation.aes_encrypt(friends_1 + "," + username_2, hash_1)
+            new_encrypted_2 = generation.aes_encrypt(friends_2 + "," + username_1, hash_2)
             cursor.execute("INSERT OR REPLACE INTO users (friends) VALUES(?) WHERE username = ?", (new_encrypted_1, username_1))
             cursor.execute("INSERT OR REPLACE INTO users (friends) VALUES(?) WHERE username = ?", (new_encrypted_2, username_2))
         except sqlite3.OperationalError:
@@ -51,10 +50,26 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
-def update_settings(username, settings, hash):
+def apply_settings(username, settings, hash):
     try:
-        cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (generation.sha_aes_encrypt(settings, hash[16:], hash[:16]), username))
+        cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
     except sqlite3.OperationalError:
-        raise Exception("couldntinsert")
+        raise Exception("nouser")
+    else:
+        connection.commit()
+
+def apply_group_settings(username, settings, hash):
+    try:
+        cursor.execute("UPDATE users SET group_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        connection.commit()
+
+def apply_channel_settings(username, settings, hash):
+    try:
+        cursor.execute("UPDATE users SET channel_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
     else:
         connection.commit()

@@ -9,7 +9,7 @@ path.append("..")
 import utilities.log as log
 import utilities.validation as validation
 from utilities.check_ports import check_port
-from config import text_channel
+from config import ws_text_channel
 
 async def stream(ws):
     while True:
@@ -27,12 +27,12 @@ async def stream(ws):
             await ws.send("HATA: Mesajınızın formatı geçersizdir.")
 
 async def serve():
-    async with websockets.serve(stream, text_channel.host, text_channel.port):
+    async with websockets.serve(stream, ws_text_channel.host, ws_text_channel.port):
         await asyncio.Future()
 
-if check_port(text_channel.host, text_channel.port):
+if check_port(ws_text_channel.host, ws_text_channel.port):
     try:
-        log.success("Kanal sunucusu, ws://{}:{} adresinde çalışıyor.".format(text_channel.host, text_channel.port))
+        log.success("Kanal sunucusu, ws://{}:{} adresinde çalışıyor.".format(ws_text_channel.host, ws_text_channel.port))
         asyncio.run(serve())
     except KeyboardInterrupt:
         pass
@@ -40,5 +40,5 @@ if check_port(text_channel.host, text_channel.port):
         log.failure(str(error))
         exit(1)
 else:
-    log.failure("Kanal WebSocket sunucusunun portu {} müsait değil.".format(text_channel.port))
+    log.failure("Kanal WebSocket sunucusunun portu {} müsait değil.".format(ws_text_channel.port))
     exit(1)
