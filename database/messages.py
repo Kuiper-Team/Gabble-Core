@@ -9,25 +9,25 @@ from utilities.uuidv7 import uuid_v7
 
 cursor.execute("CREATE TABLE IF NOT EXISTS messages (message TEXT NOT NULL, uuid TEXT NOT NULL, group_uuid TEXT NOT NULL, channel_uuid TEXT NOT NULL, PRIMARY KEY (uuid))")
 
-def create(message, group_uuid, channel_uuid, hash):
+def create(message, room_uuid, channel_uuid, hash):
     try:
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid_v7().hex, group_uuid, channel_uuid))
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid_v7().hex, room_uuid, channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:
         connection.commit()
 
-def delete(uuid, group_uuid, channel_uuid):
+def delete(uuid, room_uuid, channel_uuid):
     try:
-        cursor.execute("DELETE FROM messages WHERE uuid = ? AND group_uuid = ? AND channel_uuid = ?", (uuid, group_uuid, channel_uuid))
+        cursor.execute("DELETE FROM messages WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (uuid, room_uuid, channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("nomessage")
     else:
         connection.commit()
 
-def edit_message(new_message, uuid, group_uuid, channel_uuid):
+def edit_message(new_message, uuid, room_uuid, channel_uuid):
     try:
-        cursor.execute("UPDATE messages SET new_message = ? WHERE uuid = ? AND group_uuid = ? AND channel_uuid = ?", (generation.aes_encrypt(new_message, hash), uuid, group_uuid, channel_uuid))
+        cursor.execute("UPDATE messages SET new_message = ? WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (generation.aes_encrypt(new_message, hash), uuid, room_uuid, channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("nomessage")
     else:

@@ -1,10 +1,10 @@
 #[7203, 7214] aralığındaki portlar bilinen başka hizmetler tarafından kullanılmıyor.
 app_name = "Sohbet"
 
-class WSTextChannel:
+class UserConnection:
     host = "0.0.0.0"
     port = 7203
-ws_text_channel = WSTextChannel()
+user_connection = UserConnection()
 
 class Database:
     file_name = "database"
