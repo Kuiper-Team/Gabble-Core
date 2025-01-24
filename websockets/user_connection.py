@@ -15,18 +15,22 @@ from config import user_connection
 script_name = os.path.basename(__file__)
 
 async def stream(ws):
-    while True:
-        received = await ws.recv()
+    session_uuid = await ws.recv()
+    if validation.check_session_uuid(session_uuid):
+        while True:
+            received = await ws.recv()
 
-        if received == "Q":
-            break
-        elif validation.message_id(received):
-            #!!! Kimlik doğrulamasından geçilmeden channelde mesaj gönderilemeyecek. (session_uuids)
-            #!!! İlk atılan mesaj geçerli bir giriş anahtarıysa devam edecek, değilse WebSocket sunucusu bağlantıyı koparacak.
-            #!!! Mesaj formatı: uuid (boşluksuz) (32 bayt) + room_uuid (boşluksuz) (32 bayt) + channel_uuid (boşluksuz) (32 bayt) + message
-            #await ws.send(received[97:])
-        else:
-            await ws.send("invalidmessage")
+            if received == "Q":
+                break
+            elif validation.message_id(received):
+                #!!! Kimlik doğrulamasından geçilmeden channelde mesaj gönderilemeyecek. (session_uuids)
+                #!!! İlk atılan mesaj geçerli bir giriş anahtarıysa devam edecek, değilse WebSocket sunucusu bağlantıyı koparacak.
+                #!!! Mesaj formatı: uuid (boşluksuz) (32 bayt) + room_uuid (boşluksuz) (32 bayt) + channel_uuid (boşluksuz) (32 bayt) + message
+                await ws.send(received[97:])
+            else:
+                await ws.send("invalidmessage")
+    else:
+        await ws.send("incorrectsessionuuid")
 
 async def serve():
     async with websockets.serve(stream, user_connection.host, user_connection.port):
