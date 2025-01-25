@@ -21,5 +21,5 @@ class RESTAPI:
     host = "0.0.0.0"
     port = 7203
     path = "/api"
-    incidents_path = "incidents"
+    incidents_path = "incident"
 rest_api = RESTAPI()
