@@ -16,3 +16,7 @@ database = Database()
 class Message:
     character_limit = 4000
 message = Message()
+
+class RESTAPI:
+    path = "/api"
+rest_api = RESTAPI()

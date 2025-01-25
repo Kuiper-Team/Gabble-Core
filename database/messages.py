@@ -5,7 +5,6 @@ path.append("..")
 
 import utilities.generation as generation
 from connection import connection, cursor
-from utilities.uuidv7 import uuid_v7
 
 cursor.execute("CREATE TABLE IF NOT EXISTS messages (message TEXT NOT NULL, uuid TEXT NOT NULL, room_uuid TEXT NOT NULL, channel_uuid TEXT NOT NULL, PRIMARY KEY (uuid))")
 

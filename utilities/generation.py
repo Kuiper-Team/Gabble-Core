@@ -1,5 +1,3 @@
-import string
-
 import pyargon2
 import random
 from Crypto.Cipher import AES
@@ -44,7 +42,7 @@ def ws_message(time: datetime, user_id: UUID):
 def channel_key(channel_id: UUID, user_id: UUID, login_key: UUID):
     return channel_id.hex + user_id.hex + login_key.hex
 
-scl = string.ascii_letters + string.digits + string.punctuation
+scl = ascii_letters + digits + punctuation
 def password(length, character_list=scl):
     password = ""
     for character in range(length):
