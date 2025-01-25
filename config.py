@@ -3,7 +3,7 @@ app_name = "Sohbet"
 
 class UserConnection:
     host = "0.0.0.0"
-    port = 7203
+    port = 7204
 user_connection = UserConnection()
 
 class Database:
@@ -18,5 +18,7 @@ class Message:
 message = Message()
 
 class RESTAPI:
+    host = "0.0.0.0"
+    port = 7203
     path = "/api"
 rest_api = RESTAPI()
