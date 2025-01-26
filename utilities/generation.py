@@ -3,7 +3,6 @@ import random
 from Crypto.Cipher import AES
 from datetime import datetime
 from string import ascii_letters, digits, punctuation
-from uuid import UUID
 
 #Kullanılan şifreleme metotları:
 #1. Argon2 (hash) -> Bir veriyi kullanıcı HASH'İ İLE güvenli bir şekilde şifreleyip saklamak istediğimizde...
@@ -35,12 +34,6 @@ def aes_decrypt(encrypted, hash):
     cipher = AES.new(key=hash[:16], mode=AES.MODE_CFB, iv=hash[16:].encode("utf-8"))
 
     return cipher.decrypt(encrypted).decode("utf-8")
-
-def ws_message(time: datetime, user_id: UUID):
-    return add_zeros(time.hour, 2) + add_zeros(time.minute, 2) + add_zeros(time.day, 2) + add_zeros(time.month, 2) + add_zeros(time.year, 4) + user_id.hex
-
-def channel_key(channel_id: UUID, user_id: UUID, login_key: UUID):
-    return channel_id.hex + user_id.hex + login_key.hex
 
 scl = ascii_letters + digits + punctuation
 def password(length, character_list=scl):

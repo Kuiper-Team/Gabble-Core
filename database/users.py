@@ -1,13 +1,14 @@
 import sqlite3
 from datetime import datetime
 from sys import path
+
 path.append("..")
 
 import utilities.generation as generation
 from config import database
 from connection import connection, cursor
 
-cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, group_settings TEXT, channel_settings TEXT, friends TEXT, PRIMARY KEY (username))")
+cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, group_settings TEXT, channel_settings TEXT, friends TEXT, biography TEXT, PRIMARY KEY (username))")
 
 def create(username, password):
     hash = generation.hashed_password(password)
@@ -47,6 +48,14 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
+def update_biography(biography, hash):
+    try:
+        cursor.execute("UPDATE profiles SET biography = ? WHERE username = ?", (generation.aes_encrypt(biography, hash),))
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        connection.commit()
+
 def apply_settings(username, settings, hash):
     try:
         cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
@@ -70,3 +79,18 @@ def apply_channel_settings(username, settings, hash):
         raise Exception("nouser")
     else:
         connection.commit()
+
+def exists(username):
+    try:
+        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+    except sqlite3.OperationalError:
+        return False
+    else:
+        return True
+
+def check_credentials(username, password):
+    hash = generation.hashed_password(password)
+    try:
+        return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0], hash
+    except sqlite3.OperationalError:
+        raise Exception("incorrectpassword")
