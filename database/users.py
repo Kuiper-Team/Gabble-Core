@@ -6,7 +6,7 @@ path.append("..")
 
 import utilities.generation as generation
 from config import database
-from connection import connection, cursor
+from database.connection import connection, cursor
 
 cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, group_settings TEXT, channel_settings TEXT, friends TEXT, biography TEXT, PRIMARY KEY (username))")
 

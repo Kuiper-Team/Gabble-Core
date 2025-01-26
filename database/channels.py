@@ -4,7 +4,7 @@ from sys import path
 path.append("..")
 
 import utilities.generation as generation
-from connection import connection, cursor
+from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
 cursor.execute("CREATE TABLE IF NOT EXISTS channels (title TEXT NOT NULL, uuid TEXT NOT NULL, room_uuid TEXT NOT NULL, type INTEGER NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, tags TEXT, PRIMARY KEY (uuid))")

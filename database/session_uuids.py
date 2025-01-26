@@ -4,7 +4,7 @@ from uuid import uuid4
 
 path.append("..")
 
-from connection import connection, cursor
+from database.connection import connection, cursor
 
 cursor.execute("CREATE TABLE IF NOT EXISTS session_uuids (username TEXT NOT NULL, uuid TEXT NOT NULL, expiry INTEGER NOT NULL, hash TEXT NOT NULL, PRIMARY KEY (uuid))")
 

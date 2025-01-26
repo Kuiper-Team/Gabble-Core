@@ -27,7 +27,7 @@ parser.add_argument(
     "expiry"
 )
 
-access = False if open(os.path.join(rest_api.incidents_path), "access.txt").read() == 0 else True
+access = False if open(os.path.join(rest_api.incidents_path, "access.txt")).read() == 0 else True
 class Status(Resource):
     def get(self):
         return {
