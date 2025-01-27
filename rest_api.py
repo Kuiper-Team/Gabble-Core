@@ -47,6 +47,14 @@ missingarguments = {
     "success": False,
     "error": "missingargument"
 }
+invalidsessionuuid = {
+    "success": False,
+    "error": "invalidsessionuuid"
+}
+nouser = {
+    "success": False,
+    "error": "nouser"
+}
 success = {
     "success": True
 }
@@ -141,10 +149,7 @@ class CreateSession(Resource):
         if not(username and password and expiry):
             return missingarguments
         elif not users.exists(username):
-            return {
-                "success": False,
-                "error": "nouser"
-            }
+            return nouser
         elif not (now_ts < expiry < now_ts + 31536000): #365 günden fazla süre oturum açık kalamaz.
             return {
                 "success": False,
@@ -283,15 +288,9 @@ class DeleteAccount(Resource):
         if not (username and session_uuid):
             return missingarguments
         elif not (check[0] and username == check[1]):
-            return {
-                "success": False,
-                "error": "invalidsessionuuid"
-            }
+            return invalidsessionuuid
         elif not users.exists(username):
-            return {
-                "success": False,
-                "error": "nouser"
-            }
+            return nouser
         try:
             users.delete(session_uuid)
         except Exception as code:
@@ -301,6 +300,24 @@ class DeleteAccount(Resource):
             }
         else:
             return success
+
+class UpdateAccount(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        session_uuid = arguments["session_uuid"]
+
+        check = session_uuids.check(session_uuid)
+        if not (username and session_uuid):
+            return missingarguments
+        elif not (users.exists(username)):
+            return nouser
+        elif not (check[0] and username == check[1]):
+            return invalidsessionuuid
+
+        #users modülündeki update ve apply ile başlayanlar arasında seçimLER yaptırılacak ve hepsine uygulanacak.
 
 class SendFriendRequest(Resource):
     def get(self):
@@ -326,10 +343,7 @@ class SendFriendRequest(Resource):
                 "error": "norecipient"
             }
         elif not (check[0] and sender == check[1]):
-            return {
-                "success": False,
-                "error": "invalidsessionuuid"
-            }
+            return invalidsessionuuid
 
         hash = None
         try:
@@ -356,10 +370,7 @@ class CancelFriendRequest(Resource):
         if not (uuid and session_uuid):
             return missingarguments
         elif not (check[0] and sender == check[1]):
-            return {
-                "success": False,
-                "error": "invalidsessionuuid"
-            }
+            return invalidsessionuuid
 
         try:
             requests.cancel(uuid)
@@ -384,10 +395,7 @@ class AcceptFriendRequest(Resource):
         if not (uuid and session_uuid):
             return missingarguments
         elif not (check[0] and username == check[1]):
-            return {
-                "success": False,
-                "error": "invalidsessionuuid"
-            }
+            return invalidsessionuuid
 
 api.add_resource(Status, "{}/status".format(rest_api.path), "{}/status/".format(rest_api.path))
 api.add_resource(Status.English, "{}/status/english".format(rest_api.path), "{}/status/english/".format(rest_api.path))
