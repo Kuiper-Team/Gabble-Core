@@ -1,3 +1,4 @@
+#Kullanıcı tarafından gönderilen mesaj silme, profil değiştirme gibi kodları işleme ve kullanıcıya dönüt verme yapılacak.
 import asyncio
 import os
 import sqlite3

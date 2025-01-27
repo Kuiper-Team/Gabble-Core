@@ -7,7 +7,7 @@ import utilities.generation as generation
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
-cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, channels TEXT, members TEXT NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
+cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, type INTEGER NOT NULL, channels TEXT, members TEXT NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
 #"channels" formatı: kanal_türü_numarası + kanal uuid'si + yıldız + ...
 #"members" formatı: kullanıcı_adı_1*kullanıcı_adı_2*...
 #"permissions_map" formatı:
@@ -26,9 +26,9 @@ cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT
 #   }
 #}
 
-def create(title, settings, permissions_map, username, hash):
+def create(title, type, settings, permissions_map, username, hash):
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, None, generation.aes_encrypt(username, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash)))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, type, None, generation.aes_encrypt(username, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash)))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:

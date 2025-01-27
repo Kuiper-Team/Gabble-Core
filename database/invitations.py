@@ -5,13 +5,13 @@ path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor
-from utilities.uuidv7 import uuid_v7
+from uuid import uuid4
 
 cursor.execute("CREATE TABLE IF NOT EXISTS invitations (message TEXT, uuid TEXT NOT NULL, room_uuid TEXT NOT NULL, type INTEGER NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid))")
 
-def create(title, room_uuid, type, expiry, hash):
+def create(message, room_uuid, type, expiry, hash):
     try:
-        cursor.execute("INSERT INTO invitations VALUES (?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, room_uuid, type, expiry))
+        cursor.execute("INSERT INTO invitations VALUES (?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid4().hex, room_uuid, type, expiry))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:

@@ -4,6 +4,7 @@ from uuid import uuid4
 
 path.append("..")
 
+import utilities.validation as validation
 from database.connection import connection, cursor
 
 cursor.execute("CREATE TABLE IF NOT EXISTS session_uuids (username TEXT NOT NULL, uuid TEXT NOT NULL, expiry INTEGER NOT NULL, hash TEXT NOT NULL, PRIMARY KEY (uuid))")
@@ -24,6 +25,14 @@ def check(uuid):
     try:
         data = cursor.execute("SELECT expiry, username FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()
 
-        return timestamp(data[0]), data[1]
+        return validation.timestamp(data[0]), data[1]
     except sqlite3.OperationalError:
-        return False
+        return False, None
+
+def get_hash(uuid):
+    try:
+        hash = cursor.execute("SELECT hash FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        raise Exception("nosessionuuid")
+    else:
+        return hash

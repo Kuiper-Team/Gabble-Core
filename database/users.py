@@ -20,6 +20,8 @@ def create(username, password):
     else:
         connection.commit()
 
+        return hash
+
 def delete(username):
     try:
         cursor.execute("DELETE FROM users WHERE username = ?", (username,))
@@ -94,3 +96,11 @@ def check_credentials(username, password):
         return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0], hash
     except sqlite3.OperationalError:
         raise Exception("incorrectpassword")
+
+def get_hash(username):
+    try:
+        hash = cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        return hash
