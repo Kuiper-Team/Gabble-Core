@@ -1,6 +1,7 @@
 import pyargon2
 import random
 from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 from datetime import datetime
 from string import ascii_letters, digits, punctuation
 
@@ -25,15 +26,19 @@ def hashed_password(password):
 
     return pyargon2.hash(password[:slice_index], password[slice_index:])
 
+#encode(): str -> byte
+#decode(): byte -> str
 def aes_encrypt(text, hash):
-    cipher = AES.new(key=hash[:16], mode=AES.MODE_CFB, iv=hash[16:].encode("utf-8"))
+    iv = get_random_bytes(16)
+    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
 
-    return cipher.encrypt(text.encode("utf-8"))
+    return iv.decode("utf-8") + cipher.encrypt(text.encode("utf-8")).decode("utf-8")
 
-def aes_decrypt(encrypted, hash):
-    cipher = AES.new(key=hash[:16], mode=AES.MODE_CFB, iv=hash[16:].encode("utf-8"))
+def aes_decrypt(ciphertext, hash):
+    iv = ciphertext[:16].encode("utf-8")
+    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
 
-    return cipher.decrypt(encrypted).decode("utf-8")
+    return cipher.decrypt(ciphertext).decode("utf-8")
 
 scl = ascii_letters + digits + punctuation
 def password(length, character_list=scl):
