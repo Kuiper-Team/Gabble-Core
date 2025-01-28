@@ -8,7 +8,7 @@ import utilities.generation as generation
 from config import database
 from database.connection import connection, cursor
 
-cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, group_settings TEXT, channel_settings TEXT, friends TEXT, biography TEXT, PRIMARY KEY (username))")
+cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT NOT NULL, toc INTEGER NOT NULL, hash TEXT NOT NULL, settings TEXT NOT NULL, room_settings TEXT, channel_settings TEXT, friends TEXT, biography TEXT, PRIMARY KEY (username))")
 
 def create(username, password):
     hash = generation.hashed_password(password)
@@ -66,9 +66,9 @@ def apply_settings(username, settings, hash):
     else:
         connection.commit()
 
-def apply_group_settings(username, settings, hash):
+def apply_room_settings(username, settings, hash):
     try:
-        cursor.execute("UPDATE users SET group_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
+        cursor.execute("UPDATE users SET room_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:

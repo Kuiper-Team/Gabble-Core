@@ -29,7 +29,11 @@ parser.add_argument(
     "expiry",
     "sender",
     "recipient",
-    "message"
+    "message",
+    "biography",
+    "settings",
+    "room_settings",
+    "channel_settings"
 )
 
 @app.errorhandler(404)
@@ -307,17 +311,49 @@ class UpdateAccount(Resource):
     def post(self):
         arguments = parser.parse_args()
         username = arguments["username"]
+        biography = arguments["biography"]
+        settings = arguments["settings"]
+        room_settings = arguments["room_settings"]
+        channel_settings = arguments["channel_settings"]
         session_uuid = arguments["session_uuid"]
 
         check = session_uuids.check(session_uuid)
-        if not (username and session_uuid):
+        if not (username and session_uuid and biography and settings):
             return missingarguments
         elif not (users.exists(username)):
             return nouser
         elif not (check[0] and username == check[1]):
             return invalidsessionuuid
 
-        #users modülündeki update ve apply ile başlayanlar arasında seçimLER yaptırılacak ve hepsine uygulanacak.
+        hash = session_uuids.check(session_uuid)
+        try:
+            users.update_biography(generation.aes_encrypt(biography, hash), hash)
+            users.apply_settings(username, generation.aes_encrypt(settings, hash), hash)
+        except Exception as code:
+            return {
+                "success": False,
+                "error": code
+            }
+        if room_settings:
+            try:
+                users.apply_room_settings(username, generation.aes_encrypt(room_settings, hash), hash)
+            except Exception as code:
+                return {
+                    "success": False,
+                    "error": code
+                }
+        if channel_settings:
+            try:
+                users.apply_channel_settings(username, generation.aes_encrypt(channel_settings, hash), hash)
+            except Exception as code:
+                return {
+                    "success": False,
+                    "error": code
+                }
+
+        return {
+            "success": True
+        }
 
 class SendFriendRequest(Resource):
     def get(self):
@@ -408,5 +444,6 @@ api.add_resource(CreateSession, "{}/signin".format(rest_api.path), "{}/signin/".
 api.add_resource(User, "{}/user".format(rest_api.path), "{}/user/".format(rest_api.path))
 api.add_resource(CreateAccount, "{}/user/create".format(rest_api.path), "{}/user/create/".format(rest_api.path))
 api.add_resource(DeleteAccount, "{}/user/delete".format(rest_api.path), "{}/user/delete/".format(rest_api.path))
+api.add_resource(UpdateAccount, "{}/user/update".format(rest_api.path), "{}/user/update/".format(rest_api.path))
 
 app.run(host=rest_api.host, port=rest_api.port)

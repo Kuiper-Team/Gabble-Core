@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-import generation
+import utilities.generation as generation
 
 def uuid_v4(uuid_str):
     object = None
