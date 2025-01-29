@@ -4,31 +4,38 @@ from sys import path
 path.append("..")
 
 import utilities.generation as generation
+from config import room
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
 cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, type INTEGER NOT NULL, channels TEXT, members TEXT NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
 #"channels" formatı: kanal_türü_numarası + kanal uuid'si + yıldız + ...
-#"members" formatı: kullanıcı_adı_1*kullanıcı_adı_2*...
+#"members" formatı: kullanıcı_adı_1,kullanıcı_adı_2,...
 #"permissions_map" formatı:
 #"tags": {
 #   "Şah": {
 #       "icon": "(dosya uuidsi...)",
-#       "color": 0x17CA4D,
-#       "permissions_map": { (yetki haritası...) }
+#       "color": "17CA4D",
+#       "permissions": { (yetki haritası...) }
 #   }
 #}
 #"members": {
 #   "Faysal": {
 #       "icon": "(dosya uuidsi...)",
-#       "color": 0x17CA4D,
-#       "permission_map": { (yetki haritası...) }
+#       "color": "17CA4D",
+#       "permissions": { (yetki haritası...) }
 #   }
 #}
 
-def create(title, type, settings, permissions_map, username, hash):
+#type (room) için
+#0: Topluluk odası
+#1: Direkt mesajlaşma odası
+def create(title, type, username, hash):
+    if not 0 <= type <= 1:
+        raise Exception("invalidtype")
+
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, type, None, generation.aes_encrypt(username, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash)))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, type, None, generation.aes_encrypt(username, hash), generation.aes_encrypt(room.default_settings_0 if type == 0 else room.default_settings_1, hash), generation.aes_encrypt(room.default_pm.format(username), hash)))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:
@@ -42,7 +49,13 @@ def delete(uuid):
     else:
         connection.commit()
 
+#type (channel) için
+#0: Metin kanalı
+#1: Ses kanalı
 def create_channel(title, room_uuid, type, settings, permissions_map, tags, hash):
+    if not 0 <= type <= 1:
+        raise Exception("invalidtype")
+
     try:
         cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, room_uuid, generation.aes_encrypt(type, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), generation.aes_encrypt(tags, hash)))
     except sqlite3.OperationalError:

@@ -12,10 +12,11 @@ from sys import path
 path.append("..")
 
 import database.requests as requests
+import database.rooms as rooms
 import database.session_uuids as session_uuids
 import database.users as users
 import utilities.generation as generation
-from config import rest_api, message
+from config import rest_api
 from database.connection import cursor
 
 app = Flask(__name__)
@@ -33,7 +34,9 @@ parser.add_argument(
     "biography",
     "settings",
     "room_settings",
-    "channel_settings"
+    "channel_settings",
+    "title",
+    "type"
 )
 
 @app.errorhandler(404)
@@ -58,6 +61,10 @@ invalidsessionuuid = {
 nouser = {
     "success": False,
     "error": "nouser"
+}
+unauthorizedsession = {
+    "success": False,
+    "error": "unauthorizedsession"
 }
 success = {
     "success": True
@@ -188,7 +195,7 @@ class User(Resource):
         username = arguments["username"]
         session_uuid = arguments["session_uuid"]
 
-        if not (session_uuid and username):
+        if not (username and session_uuid):
             return missingarguments
         data = None
         try:
@@ -234,15 +241,9 @@ class CreateAccount(Resource):
 
         if not (
             3 <= len(username) <= 36 and
-            18 <= len(password) <= 45
+            18 <= len(password) <= 45 and
+            all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in password)
         ) and ":," in username:
-            return {
-                "success": False,
-                "error": "invalidusername"
-            }
-        try:
-            username.decode("ascii")
-        except UnicodeDecodeError:
             return {
                 "success": False,
                 "error": "invalidusername"
@@ -291,12 +292,14 @@ class DeleteAccount(Resource):
         check = session_uuids.check(session_uuid)
         if not (username and session_uuid):
             return missingarguments
-        elif not (check[0] and username == check[1]):
+        elif not check[0]:
             return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
         elif not users.exists(username):
             return nouser
         try:
-            users.delete(session_uuid)
+            users.delete(uuid)
         except Exception as code:
             return {
                 "success": False,
@@ -320,13 +323,15 @@ class UpdateAccount(Resource):
         check = session_uuids.check(session_uuid)
         if not (username and session_uuid and biography and settings):
             return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
         elif not (users.exists(username)):
             return nouser
-        elif not (check[0] and username == check[1]):
-            return invalidsessionuuid
 
-        hash = session_uuids.check(session_uuid)
         try:
+            hash = session_uuids.get_hash(session_uuid)
             users.update_biography(generation.aes_encrypt(biography, hash), hash)
             users.apply_settings(username, generation.aes_encrypt(settings, hash), hash)
         except Exception as code:
@@ -368,6 +373,10 @@ class SendFriendRequest(Resource):
         check = session_uuids.check(session_uuid)
         if not (sender and recipient and session_uuid):
             return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not sender == check[1]:
+            return unauthorizedsession
         elif not users.exists(sender):
             return {
                 "success": False,
@@ -378,10 +387,7 @@ class SendFriendRequest(Resource):
                 "success": False,
                 "error": "norecipient"
             }
-        elif not (check[0] and sender == check[1]):
-            return invalidsessionuuid
 
-        hash = None
         try:
             hash = session_uuids.get_hash(session_uuid)
             requests.send(sender, generation.aes_encrypt(recipient, hash), message, 0, generation.unix_timestamp(datetime.now()) + 604800, hash) #7 gün içinde dönüt olmazsa silinir.
@@ -398,15 +404,17 @@ class CancelFriendRequest(Resource):
         return usepost
     def post(self):
         arguments = parser.parse_args()
-        sender = arguments["sender"]
+        sender = arguments["username"]
         uuid = arguments["uuid"]
         session_uuid = arguments["session_uuid"]
 
         check = session_uuids.check(session_uuid)
         if not (uuid and session_uuid):
             return missingarguments
-        elif not (check[0] and sender == check[1]):
+        elif not check[0]:
             return invalidsessionuuid
+        elif not sender == check[1]:
+            return unauthorizedsession
 
         try:
             requests.cancel(uuid)
@@ -427,11 +435,218 @@ class AcceptFriendRequest(Resource):
         uuid = arguments["uuid"]
         session_uuid = arguments["session_uuid"]
 
+        try:
+            cursor.execute("SELECT uuid FROM requests WHERE uuid = ?", (uuid,))
+        except sqlite3.OperationalError:
+            return {
+                "success": False,
+                "error": "norequest"
+            }
+        sender = cursor.execute("SELECT sender FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
+        recipient = cursor.execute("SELECT recipient FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
         check = session_uuids.check(session_uuid)
         if not (uuid and session_uuid):
             return missingarguments
-        elif not (check[0] and username == check[1]):
+        elif not check[0]:
             return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
+        elif not users.exists(username):
+            return nouser
+        elif not users.exists(sender):
+            return {
+                "success": False,
+                "error": "nosender"
+            }
+        elif not users.exists(recipient):
+            return {
+                "success": False,
+                "error": "norecipient"
+            }
+        elif not username == recipient:
+            return {
+                "success": False,
+                "error": "notrecipient"
+            }
+
+        try:
+            hash_1 = users.get_hash(sender)
+            hash_2 = session_uuids.get_hash(session_uuid)
+            users.add_friends(sender, recipient, hash_1, hash_2)
+        except sqlite3.OperationalError:
+            return {
+                "success": False,
+                "error": "nouser"
+            }
+        else:
+            try:
+                requests.cancel(uuid)
+            except Exception as code:
+                return {
+                    "success": False,
+                    "error": code
+                }
+            else:
+                return success
+
+class DeclineFriendRequest(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        uuid = arguments["uuid"]
+        session_uuid = arguments["session_uuid"]
+
+        try:
+            cursor.execute("SELECT uuid FROM requests WHERE uuid = ?", (uuid,))
+        except sqlite3.OperationalError:
+            return {
+                "success": False,
+                "error": "norequest"
+            }
+        sender = cursor.execute("SELECT sender FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
+        recipient = cursor.execute("SELECT recipient FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
+        check = session_uuids.check(session_uuid)
+        if not (uuid and session_uuid):
+            return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
+        elif not users.exists(username):
+            return nouser
+        elif not users.exists(sender):
+            return {
+                "success": False,
+                "error": "nosender"
+            }
+        elif not users.exists(recipient):
+            return {
+                "success": False,
+                "error": "norecipient"
+            }
+        elif not username == recipient:
+            return {
+                "success": False,
+                "error": "notrecipient"
+            }
+
+        try:
+            requests.cancel(uuid)
+        except Exception as code:
+            return {
+                "success": False,
+                "error": code
+            }
+class Room(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        uuid = arguments["uuid"]
+        session_uuid = arguments["session_uuid"]
+
+        if not (uuid and username and session_uuid):
+            return missingarguments
+        data = None
+        try:
+            data = cursor.execute("SELECT * FROM rooms WHERE uuid = ?", (uuid,)).fetchone()
+        except sqlite3.OperationalError:
+            return {
+                "success": False,
+                "error": "couldntfetchfromdb"
+            }
+        else:
+            check = session_uuids.check(session_uuid)
+            if session_uuid and check[0] and username == check[1]:
+                #KULLANICI ADMİN Mİ DEĞİL Mİ ONA GÖRE İKİ IF BLOĞU OLACAK, ADMİN OLAN SETTINGS VE GROUP_SETTINGS DE GÖRECEK.
+                return {
+                    "data": {
+                        "public": {
+                            "uuid": data[1],
+                            "title": data[0],
+                            "type": data[2],
+                            "biography": data[7]
+                        },
+                        "private": {
+                            "settings": data[3],
+                            "group_settings": data[4]
+                        }
+                    },
+                }
+            else:
+                return {
+                    "data": {
+                        "public": {
+                            "username": username,
+                            "toc": data[1]
+                        }
+                    }
+                }
+
+class CreateRoom(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        title = arguments["title"]
+        type = arguments["type"]
+        session_uuid = arguments["session_uuid"]
+
+        check = session_uuids.check(session_uuid)
+        if not (username and title and type and session_uuid):
+            return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
+        elif not users.exists(username):
+            return nouser
+
+        try:
+            hash = session_uuids.get_hash(session_uuid)
+            rooms.create(title, type, username, hash)
+        except Exception as code:
+            return {
+                "success": False,
+                "error": code
+            }
+        else:
+            return success
+
+class DeleteRoom(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        uuid = arguments["uuid"]
+        session_uuid = arguments["session_uuid"]
+
+        check = session_uuids.check(session_uuid)
+        if not (uuid and session_uuid):
+            return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
+        elif not users.exists(username):
+            return nouser
+        try:
+            rooms.delete(uuid)
+        except Exception as code:
+            return {
+                "success": False,
+                "error": code
+            }
+        else:
+            return success
+
+#Room() sınıfında kaldık.
+#room: UpdateRoom(), AddChannel(), JoinRoom()
 
 api.add_resource(Status, "{}/status".format(rest_api.path), "{}/status/".format(rest_api.path))
 api.add_resource(Status.English, "{}/status/english".format(rest_api.path), "{}/status/english/".format(rest_api.path))
@@ -445,5 +660,15 @@ api.add_resource(User, "{}/user".format(rest_api.path), "{}/user/".format(rest_a
 api.add_resource(CreateAccount, "{}/user/create".format(rest_api.path), "{}/user/create/".format(rest_api.path))
 api.add_resource(DeleteAccount, "{}/user/delete".format(rest_api.path), "{}/user/delete/".format(rest_api.path))
 api.add_resource(UpdateAccount, "{}/user/update".format(rest_api.path), "{}/user/update/".format(rest_api.path))
+
+api.add_resource(SendFriendRequest, "{}/friend_request".format(rest_api.path), "{}/friend_request/".format(rest_api.path))
+api.add_resource(CancelFriendRequest, "{}/friend_request/cancel".format(rest_api.path), "{}/friend_request/cancel/".format(rest_api.path))
+api.add_resource(AcceptFriendRequest, "{}/friend_request/accept".format(rest_api.path), "{}/friend_request/accept/".format(rest_api.path))
+api.add_resource(DeclineFriendRequest, "{}/friend_request/decline".format(rest_api.path), "{}/friend_request/decline/".format(rest_api.path))
+
+api.add_resource(Room, "{}/room".format(rest_api.path), "{}/room/".format(rest_api.path))
+api.add_resource(CreateRoom, "{}/room/create".format(rest_api.path), "{}/room/create/".format(rest_api.path))
+api.add_resource(DeleteRoom, "{}/room/delete".format(rest_api.path), "{}/room/delete/".format(rest_api.path))
+#(...)
 
 app.run(host=rest_api.host, port=rest_api.port)

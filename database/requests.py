@@ -7,13 +7,13 @@ import utilities.generation as generation
 from database.connection import connection, cursor
 from uuid import uuid4
 
-cursor.execute("CREATE TABLE IF NOT EXISTS requests (sender TEXT NOT NULL, recipient TEXT NOT NULL, message TEXT, uuid TEXT NOT NULL, type INTEGER NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid))")
+cursor.execute("CREATE TABLE IF NOT EXISTS requests (sender TEXT NOT NULL, recipient TEXT NOT NULL, uuid TEXT NOT NULL, type INTEGER NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid))")
 
 #type değeri için:
 #0: Arkadaşlık isteği
 def send(sender, recipient, message, type, expiry, hash):
     try:
-        cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?, ?, ?)", (sender, generation.aes_encrypt(recipient, hash), generation.aes_encrypt(message, hash), uuid4().hex, type, expiry))
+        cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?, ?, ?)", (sender, recipient, uuid4().hex, type, expiry))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:
