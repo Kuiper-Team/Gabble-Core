@@ -11,6 +11,7 @@ from sys import path
 
 path.append("..")
 
+import database.channels as channels
 import database.requests as requests
 import database.rooms as rooms
 import database.session_uuids as session_uuids
@@ -207,8 +208,10 @@ class User(Resource):
             }
         else:
             check = session_uuids.check(session_uuid)
-            if session_uuid and check[0] and username == check[1]:
+            hash = session_uuids.get_hash(session_uuid)
+            if check[0] and username == check[1]:
                 return {
+                    "success": True,
                     "data": {
                         "public": {
                             "username": username,
@@ -216,17 +219,19 @@ class User(Resource):
                             "biography": data[7]
                         },
                         "private": {
-                            "settings": data[3],
-                            "group_settings": data[4]
+                            "settings": generation.aes_decrypt(data[3], hash),
+                            "group_settings": generation.aes_decrypt(data[4], hash)
                         }
                     },
                 }
             else:
                 return {
+                    "success": True,
                     "data": {
                         "public": {
                             "username": username,
-                            "toc": data[1]
+                            "toc": data[1],
+                            "biography": data[7]
                         }
                     }
                 }
@@ -299,7 +304,7 @@ class DeleteAccount(Resource):
         elif not users.exists(username):
             return nouser
         try:
-            users.delete(uuid)
+            users.delete(username)
         except Exception as code:
             return {
                 "success": False,
@@ -359,6 +364,46 @@ class UpdateAccount(Resource):
         return {
             "success": True
         }
+
+class FriendRequest(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        uuid = arguments["uuid"]
+        session_uuid = arguments["session_uuid"]
+
+        if not (username and uuid and session_uuid):
+            return missingarguments
+        data = None
+        try:
+            data = cursor.execute("SELECT * FROM requests WHERE uuid = ?", (username,)).fetchone()
+        except sqlite3.OperationalError:
+            return {
+                "success": False,
+                "error": "couldntfetchfromdb"
+            }
+        else:
+            check = session_uuids.check(session_uuid)
+            if not (username == data[0] or username == data[1]):
+                return {
+                    "success": False,
+                    "error": "notsenderorrecipient"
+                }
+            elif not (check[0] and username == check[1]):
+                return unauthorizedsession
+            else:
+                return {
+                    "success": True,
+                    "data": {
+                        "sender": data[0],
+                        "recipient": data[1],
+                        "uuid": data[2],
+                        "type": data[3],
+                        "expiry": data[4]
+                    }
+                }
 
 class SendFriendRequest(Resource):
     def get(self):
@@ -560,31 +605,56 @@ class Room(Resource):
             }
         else:
             check = session_uuids.check(session_uuid)
-            if session_uuid and check[0] and username == check[1]:
-                #KULLANICI ADMİN Mİ DEĞİL Mİ ONA GÖRE İKİ IF BLOĞU OLACAK, ADMİN OLAN SETTINGS VE GROUP_SETTINGS DE GÖRECEK.
+            hash = users.get_hash(rooms.owner(uuid))
+            owner = None
+            try:
+                owner = rooms.owner(uuid)
+            except Exception as code:
                 return {
-                    "data": {
-                        "public": {
-                            "uuid": data[1],
-                            "title": data[0],
-                            "type": data[2],
-                            "biography": data[7]
-                        },
-                        "private": {
-                            "settings": data[3],
-                            "group_settings": data[4]
-                        }
-                    },
+                    "success": False,
+                    "error": code
+                }
+            if not (check[0] and username == check[1]):
+                return unauthorizedsession
+                #KULLANICI ADMİN Mİ DEĞİL Mİ ONA GÖRE İKİ IF BLOĞU OLACAK, ADMİN OLAN SETTINGS VE GROUP_SETTINGS DE GÖRECEK.
+            elif not (username in rooms.members(uuid, users.get_hash(owner))):
+                return {
+                    "success": False,
+                    "error": "notmember"
                 }
             else:
-                return {
-                    "data": {
-                        "public": {
-                            "username": username,
-                            "toc": data[1]
+                if rooms.has_permissions(uuid, username, ("all",), session_uuids.get_hash(session_uuid)):
+                    return {
+                        "success": True,
+                        "data": {
+                            "public": {
+                                "title": generation.aes_decrypt(data[0], hash),
+                                "uuid": data[1],
+                                "type": data[2],
+                                "owner": data[4],
+                                "members": generation.aes_decrypt(data[5], hash),
+                                "channels": generation.aes_decrypt(data[3], hash),
+                            }
                         }
                     }
-                }
+                else:
+                    return {
+                        "success": True,
+                        "data": {
+                            "public": {
+                                "title": generation.aes_decrypt(data[0], hash),
+                                "uuid": data[1],
+                                "type": data[2],
+                                "owner": data[4],
+                                "members": generation.aes_decrypt(data[5], hash),
+                                "channels": generation.aes_decrypt(data[3], hash),
+                            },
+                            "private": {
+                                "settings": generation.aes_decrypt(data[6], hash),
+                                "permissions_map": generation.aes_decrypt(data[7], hash)
+                            }
+                        }
+                    }
 
 class CreateRoom(Resource):
     def get(self):
@@ -645,8 +715,71 @@ class DeleteRoom(Resource):
         else:
             return success
 
+class UpdateRoom(Resource):
+    pass #YAPILACAK.
+
+class JoinRoom(Resource):
+    pass #YAPILACAK.
+
+class AddChannel(Resource):
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        room_uuid = arguments["uuid"]
+        title = arguments["title"]
+        type = arguments["type"]
+        session_uuid = arguments["session_uuid"]
+
+        check = session_uuids.check(session_uuid)
+        if not (username and room_uuid and title and type and session_uuid):
+            return missingarguments
+        elif not check[0]:
+            return invalidsessionuuid
+        elif not username == check[1]:
+            return unauthorizedsession
+        elif not users.exists(username):
+            return nouser
+
+        check = session_uuids.check(session_uuid)
+        hash = users.get_hash(rooms.owner(room_uuid))
+        owner = None
+        try:
+            owner = rooms.owner(room_uuid)
+        except Exception as code:
+            return {
+                "success": False,
+                "error": code
+            }
+        if not (check[0] and username == check[1]):
+            return unauthorizedsession
+            # KULLANICI ADMİN Mİ DEĞİL Mİ ONA GÖRE İKİ IF BLOĞU OLACAK, ADMİN OLAN SETTINGS VE GROUP_SETTINGS DE GÖRECEK.
+        elif not (username in rooms.members(room_uuid, users.get_hash(owner))):
+            return {
+                "success": False,
+                "error": "notmember"
+            }
+        else:
+            if rooms.has_permissions(room_uuid, username, ("all",), session_uuids.get_hash(session_uuid)):
+                try:
+                    rooms.create(title, type, username, hash)
+                except Exception as code:
+                    return {
+                        "success": False,
+                        "error": code
+                    }
+                else:
+                    return success
+            else:
+                return {
+                    "success": False,
+                    "error": "nopermission"
+                }
+
 #Room() sınıfında kaldık.
-#room: UpdateRoom(), AddChannel(), JoinRoom()
+#room: UpdateRoom(), JoinRoom()
+#Daha sonra channels'a geçeceğiz.
 
 api.add_resource(Status, "{}/status".format(rest_api.path), "{}/status/".format(rest_api.path))
 api.add_resource(Status.English, "{}/status/english".format(rest_api.path), "{}/status/english/".format(rest_api.path))
@@ -661,7 +794,8 @@ api.add_resource(CreateAccount, "{}/user/create".format(rest_api.path), "{}/user
 api.add_resource(DeleteAccount, "{}/user/delete".format(rest_api.path), "{}/user/delete/".format(rest_api.path))
 api.add_resource(UpdateAccount, "{}/user/update".format(rest_api.path), "{}/user/update/".format(rest_api.path))
 
-api.add_resource(SendFriendRequest, "{}/friend_request".format(rest_api.path), "{}/friend_request/".format(rest_api.path))
+api.add_resource(FriendRequest, "{}/friend_request".format(rest_api.path), "{}/friend_request/".format(rest_api.path))
+api.add_resource(SendFriendRequest, "{}/friend_request/send".format(rest_api.path), "{}/friend_request/send/".format(rest_api.path))
 api.add_resource(CancelFriendRequest, "{}/friend_request/cancel".format(rest_api.path), "{}/friend_request/cancel/".format(rest_api.path))
 api.add_resource(AcceptFriendRequest, "{}/friend_request/accept".format(rest_api.path), "{}/friend_request/accept/".format(rest_api.path))
 api.add_resource(DeclineFriendRequest, "{}/friend_request/decline".format(rest_api.path), "{}/friend_request/decline/".format(rest_api.path))
@@ -669,6 +803,9 @@ api.add_resource(DeclineFriendRequest, "{}/friend_request/decline".format(rest_a
 api.add_resource(Room, "{}/room".format(rest_api.path), "{}/room/".format(rest_api.path))
 api.add_resource(CreateRoom, "{}/room/create".format(rest_api.path), "{}/room/create/".format(rest_api.path))
 api.add_resource(DeleteRoom, "{}/room/delete".format(rest_api.path), "{}/room/delete/".format(rest_api.path))
+api.add_resource(UpdateRoom, "{}/room/update".format(rest_api.path), "{}/room/update/".format(rest_api.path))
+api.add_resource(JoinRoom, "{}/room/join".format(rest_api.path), "{}/room/join/".format(rest_api.path))
+api.add_resource(AddChannel, "{}/room/add_channel".format(rest_api.path), "{}/room/add_channel/".format(rest_api.path))
 #(...)
 
 app.run(host=rest_api.host, port=rest_api.port)
