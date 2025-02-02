@@ -65,9 +65,9 @@ def create_channel(title, room_uuid, type, settings, permissions_map, tags, hash
     else:
         connection.commit()
 
-def apply_config(title, uuid, settings, permissions_map):
+def apply_config(title, uuid, settings, permissions_map, hash):
     try:
-        cursor.execute("UPDATE rooms SET title = ?, settings = ?, permissions_map = ?  WHERE uuid = ?", (title, settings, permissions_map, uuid))
+        cursor.execute("UPDATE rooms SET title = ?, settings = ?, permissions_map = ?  WHERE uuid = ?", (title, generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), uuid))
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
@@ -96,7 +96,7 @@ def has_permissions(uuid, username, permissions, hash):
     try:
         pm = json.loads(generation.aes_decrypt(cursor.execute("SELECT permissions_map FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash))
     except sqlite3.OperationalError:
-        raise Exception("noroom")
+        return False
     else:
         for permission in permissions:
             if pm["members"][username][permission]:

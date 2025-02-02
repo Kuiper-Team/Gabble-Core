@@ -103,7 +103,7 @@ def check_credentials(username, password):
     try:
         return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0], hash
     except sqlite3.OperationalError:
-        raise Exception("incorrectpassword")
+        return False
 
 def get_hash(username):
     try:

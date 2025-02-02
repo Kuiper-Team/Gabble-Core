@@ -1,6 +1,5 @@
 #https://flask-restful.readthedocs.io/en/latest/
 #Production mode için: https://flask.palletsprojects.com/en/stable/deploying/
-#Not found handling için: https://www.geeksforgeeks.org/python-404-error-handling-in-flask/
 #HATALAR için HTTP hata kodları eklenecek.
 import os
 import sqlite3
@@ -37,7 +36,8 @@ parser.add_argument(
     "room_settings",
     "channel_settings",
     "title",
-    "type"
+    "type",
+    "permission_map"
 )
 
 @app.errorhandler(404)
@@ -696,27 +696,53 @@ class DeleteRoom(Resource):
         uuid = arguments["uuid"]
         session_uuid = arguments["session_uuid"]
 
-        check = session_uuids.check(session_uuid)
-        if not (uuid and session_uuid):
-            return missingarguments
-        elif not check[0]:
-            return invalidsessionuuid
-        elif not username == check[1]:
-            return unauthorizedsession
-        elif not users.exists(username):
-            return nouser
+        owner = None
         try:
-            rooms.delete(uuid)
+            owner = rooms.owner(uuid)
         except Exception as code:
             return {
                 "success": False,
                 "error": code
             }
         else:
-            return success
+            check = session_uuids.check(session_uuid)
+            if not (uuid and session_uuid):
+                return missingarguments
+            elif not check[0]:
+                return invalidsessionuuid
+            elif not username == check[1]:
+                return unauthorizedsession
+            elif not users.exists(username):
+                return nouser
+            elif not rooms.has_permissions(uuid, username, ("all",), session_uuids.get_hash(session_uuid)):
+                return {
+                    "success": False,
+                    "error": "nopermission"
+                }
+            try:
+                rooms.delete(uuid)
+            except Exception as code:
+                return {
+                    "success": False,
+                    "error": code
+                }
+            else:
+                return success
 
 class UpdateRoom(Resource):
-    pass #YAPILACAK.
+    def get(self):
+        return usepost
+    def post(self):
+        arguments = parser.parse_args()
+        username = arguments["username"]
+        uuid = arguments["uuid"]
+        title = arguments["title"]
+        settings = arguments["settings"]
+        permissions_map = arguments["permissions_map"]
+        session_uuid = arguments["session_uuid"]
+
+        #İPTAL
+
 
 class JoinRoom(Resource):
     pass #YAPILACAK.
@@ -777,7 +803,6 @@ class AddChannel(Resource):
                     "error": "nopermission"
                 }
 
-#Room() sınıfında kaldık.
 #room: UpdateRoom(), JoinRoom()
 #Daha sonra channels'a geçeceğiz.
 
