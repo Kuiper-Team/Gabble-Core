@@ -31,7 +31,7 @@ parser.add_argument(
     "username",
 )
 
-map = {
+map = { #Tüm endpoint isimleri karşılık geldikleri classlara eşleştirilecek.
     "channel": {
         "channel": None
     }
