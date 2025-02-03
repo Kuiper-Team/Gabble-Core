@@ -24,10 +24,18 @@ def create(username, expiry, hash):
 def check(uuid):
     try:
         data = cursor.execute("SELECT expiry, username FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()
-
-        return validation.timestamp(data[0]), data[1]
     except sqlite3.OperationalError:
         return False, None
+    else:
+        return validation.timestamp(data[0]), data[1]
+
+def owner(uuid):
+    try:
+        owner = cursor.execute("SELECT username FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        raise Exception("nosessionuuid")
+    else:
+        return owner
 
 def get_hash(uuid):
     try:

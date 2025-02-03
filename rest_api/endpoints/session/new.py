@@ -3,9 +3,10 @@ import database.session_uuids as session_uuids
 from rest_api.presets import incorrectpassword, usepost
 
 class endpoint:
-    def __init__(self, arguments, queries):
+    def __init__(self, arguments, controls, queries):
         self.arguments = arguments
-        self.controls = queries
+        self.controls = controls
+        self.queries = queries
 
     config = {
         "arguments": {
