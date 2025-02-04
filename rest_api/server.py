@@ -52,6 +52,7 @@ def endpoint(endpoint):
     fetch_from_db= controls["fetch_from_db"]
     is_session_user_requested = controls["is_session_user_requested"]
     session_expired = controls["session_expired"]
+    username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
     valid_session_expiry = controls["valid_session_expiry"]
     if fetch_from_db:
@@ -72,6 +73,11 @@ def endpoint(endpoint):
         result = arguments[is_session_user_requested["username"]] == session_uuids.owner(arguments[is_session_user_requested["uuid"]])
         if session_expired["query"]: queries.append(result)
         elif not result: return nopermission
+    elif username_taken:
+        for user in username_taken["usernames"]:
+            result = users.exists(user)
+            if username_taken["query"]: queries.append(result)
+            elif not result: return nouser
     elif user_exists:
         for user in user_exists["users"]:
             result = users.exists(user)

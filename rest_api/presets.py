@@ -10,6 +10,10 @@ invalidsessionuuid = {
     "success": False,
     "error": "invalidsessionuuid"
 }, 406
+invalidusername = {
+    "success": False,
+    "error": "invalidusername"
+}, 406
 missingarguments = {
     "success": False,
     "error": "missingargument"

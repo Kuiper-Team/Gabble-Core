@@ -247,8 +247,9 @@ class CreateAccount(Resource):
         if not (
             3 <= len(username) <= 36 and
             18 <= len(password) <= 45 and
-            all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in password)
-        ) and ":," in username:
+            all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in password) and
+            ":," in username
+        ):
             return {
                 "success": False,
                 "error": "invalidusername"
