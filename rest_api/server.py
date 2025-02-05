@@ -34,9 +34,18 @@ parser.add_argument(
     "username",
 )
 
+import endpoints
+
 map = { #Tüm endpoint isimleri karşılık geldikleri classlara eşleştirilecek.
     "channel": {
-        "channel": None
+        "channel": endpoints.channel.channel.endpoint
+    },
+    "friend_request": {
+        "friend_request": endpoints.friend_request.friend_request.endpoint,
+        "accept": endpoints.friend_request.accept.endpoint,
+        "cancel": endpoints.friend_request.cancel.endpoint,
+        "decline": endpoints.friend_request.decline.endpoint,
+        "send": endpoints.friend_request.send.endpoint
     }
 }
 
@@ -51,7 +60,7 @@ def endpoint(endpoint):
 
     fetch_from_db= controls["fetch_from_db"]
     is_session_user_requested = controls["is_session_user_requested"]
-    session_expired = controls["session_expired"]
+    session_valid = controls["session_expired"]
     username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
     valid_session_expiry = controls["valid_session_expiry"]
@@ -62,16 +71,16 @@ def endpoint(endpoint):
             result = False
         else:
             result = True
-        if session_expired["query"]: queries.append(result)
+        if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
-    elif session_expired:
+    elif session_valid:
         now = generation.unix_timestamp(datetime.now())
-        result = session_uuids.check(arguments[session_expired["uuid"]])
-        if session_expired["query"]: queries.append(result)
+        result = session_uuids.check(arguments[session_valid["uuid"]])
+        if session_valid["query"]: queries.append(result)
         elif not result: return invalidsessionuuid
     elif is_session_user_requested:
         result = arguments[is_session_user_requested["username"]] == session_uuids.owner(arguments[is_session_user_requested["uuid"]])
-        if session_expired["query"]: queries.append(result)
+        if session_valid["query"]: queries.append(result)
         elif not result: return nopermission
     elif username_taken:
         for user in username_taken["usernames"]:
@@ -86,7 +95,7 @@ def endpoint(endpoint):
     elif valid_session_expiry:
         now = generation.unix_timestamp(datetime.now())
         result = not (now < arguments[valid_session_expiry["expiry"]] <= now + 31536000)
-        if session_expired["query"]: queries.append(result)
+        if session_valid["query"]: queries.append(result)
         elif not result: return invalidexpiry
 
     return endpoint(Resource, arguments, queries)
@@ -98,3 +107,4 @@ def error_404(error):
         "error": "notfound",
     }, 404
 
+#API'ye eklemeler burada olacak.

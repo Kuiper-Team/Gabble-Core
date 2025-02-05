@@ -30,10 +30,6 @@ success = {
     "success": True,
     "error": "success"
 }, 201 #201 Created
-unauthorizedsession = {
-    "success": False,
-    "error": "unauthorizedsession"
-}, 403
 usepost = {
     "success": False,
     "error": "usepost"

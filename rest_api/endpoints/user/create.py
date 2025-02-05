@@ -1,7 +1,7 @@
 import database.session_uuids as session_uuids
 import database.users as users
 import utilities.generation as generation
-from rest_api.presets import nouser, usepost
+from rest_api.presets import incorrectpassword, invalidusername, usepost
 
 class endpoint:
     def __init__(self, arguments, controls, queries):
@@ -16,6 +16,7 @@ class endpoint:
         },
         "controls": {
             "username_taken": {
+                "query": False,
                 "usernames": ("username",) #Argüman adı
             }
         }
@@ -33,17 +34,11 @@ class endpoint:
                     for character in self.arguments.password) and
                 ":," in self.arguments.username
         ):
-            return {
-                "success": False,
-                "error": "invalidusername"
-            }
+            return invalidusername
         try:
             self.arguments.password.decode("ascii")
         except UnicodeDecodeError:
-            return {
-                "success": False,
-                "error": "invalidpassword"
-            }
+            return incorrectpassword
 
         try:
             hash = users.create(self.arguments["username"], self.arguments["password"])

@@ -23,12 +23,13 @@ class endpoint:
                 "where": "username" #Argüman adı
             },
             "is_session_user_requested": {
-                "query": True,
+                "query": False,
                 "username": "username",
                 "uuid": "session_uuid"
             },
-            "session_expired": {
-                "query": False
+            "session_valid": {
+                "query": False,
+                "uuid": "session_uuid"
             }
         }
     }
@@ -37,11 +38,7 @@ class endpoint:
         return usepost
 
     def post(self):
-        try:
-            data = cursor.execute("SELECT * FROM users WHERE username = ?", (self.arguments["username"],)).fetchone()[0]
-        except sqlite3.OperationalError:
-            return nouser
-
+        data = self.queries["fetch_from_db"]
         username = self.arguments["username"]
         if self.queries[1]:
 
