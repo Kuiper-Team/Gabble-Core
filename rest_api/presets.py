@@ -18,6 +18,10 @@ missingarguments = {
     "success": False,
     "error": "missingargument"
 }, 406
+missingfile = {
+    "success": False,
+    "error": "missingfile"
+}, 500
 nopermission = {
     "success": False,
     "error": "nopermission"
@@ -30,7 +34,15 @@ success = {
     "success": True,
     "error": "success"
 }, 201 #201 Created
+unrecognizedlocale = {
+    "success": False,
+    "error": "unrecognizedlocale"
+}
+useget = {
+    "success": False,
+    "error": "useget"
+}, 501
 usepost = {
     "success": False,
     "error": "usepost"
-}, 405
+}, 501

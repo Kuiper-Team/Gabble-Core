@@ -10,10 +10,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": {
-            "required": ("username", "session_uuid"),
-            "optional": ((),)
-        },
+        "arguments": ("username", "session_uuid"),
         "controls": {
             "is_session_user_requested": {
                 "query": True,

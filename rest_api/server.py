@@ -51,14 +51,13 @@ map = { #Tüm endpoint isimleri karşılık geldikleri classlara eşleştirilece
 
 def endpoint(endpoint):
     arguments = parser.parse_args()
-    if not endpoint.config["arguments"]["required"] in arguments:
+    if not endpoint.config["arguments"] in arguments:
         return missingarguments
 
     controls = endpoint.config["controls"]
-    optional_arguments = endpoint.config["optional"]
     queries = []
 
-    fetch_from_db= controls["fetch_from_db"]
+    fetch_from_db = controls["fetch_from_db"]
     is_session_user_requested = controls["is_session_user_requested"]
     session_valid = controls["session_expired"]
     username_taken = controls["username_taken"]

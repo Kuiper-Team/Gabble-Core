@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import database.session_uuids as session_uuids
 import database.users as users
 import utilities.generation as generation
@@ -10,10 +12,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": {
-            "required": ("username", "password"),
-            "optional": ((),)
-        },
+        "arguments": ("username", "password"),
         "controls": {
             "username_taken": {
                 "query": False,
