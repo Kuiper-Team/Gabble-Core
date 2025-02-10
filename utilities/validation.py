@@ -38,5 +38,10 @@ def message_id(message):
 def timestamp(timestamp):
     return timestamp > generation.unix_timestamp(datetime.now())
 
-def uuid_timestamp_to_unix(uuid):
-    pass #Hazır değil.
+def integer(value):
+    try:
+        value == int(value)
+    except ValueError:
+        return False
+    else:
+        return True

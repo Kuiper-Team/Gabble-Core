@@ -6,6 +6,10 @@ invalidexpiry = {
     "success": False,
     "error": "invalidexpiry"
 }, 406 #(?)
+invalidformat = {
+    "success": False,
+    "error": "invalidformat"
+}, 406
 invalidsessionuuid = {
     "success": False,
     "error": "invalidsessionuuid"

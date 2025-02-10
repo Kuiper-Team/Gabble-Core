@@ -9,6 +9,7 @@ from flask_restful import Api, Resource, reqparse
 import database.session_uuids as session_uuids
 import database.users as users
 import utilities.generation as generation
+import utilities.validation as validation
 from config import rest_api
 from database.connection import cursor
 from presets import *
@@ -58,6 +59,7 @@ def endpoint(endpoint):
     queries = []
 
     fetch_from_db = controls["fetch_from_db"]
+    is_integer = controls["is_integer"]
     is_session_user_requested = controls["is_session_user_requested"]
     session_valid = controls["session_expired"]
     username_taken = controls["username_taken"]
@@ -72,15 +74,21 @@ def endpoint(endpoint):
             result = True
         if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
-    elif session_valid:
-        now = generation.unix_timestamp(datetime.now())
-        result = session_uuids.check(arguments[session_valid["uuid"]])
-        if session_valid["query"]: queries.append(result)
-        elif not result: return invalidsessionuuid
+    elif is_integer:
+        result = validation.integer(arguments[is_integer["argument"]])
+        if is_integer["query"]: queries.append(result)
+        elif not result: return invalidformat
     elif is_session_user_requested:
         result = arguments[is_session_user_requested["username"]] == session_uuids.owner(arguments[is_session_user_requested["uuid"]])
         if session_valid["query"]: queries.append(result)
         elif not result: return nopermission
+    elif session_valid:
+        now = generation.unix_timestamp(datetime.now())
+        result = session_uuids.check(arguments[session_valid["uuid"]])
+        if session_valid["query"]:
+            queries.append(result)
+        elif not result:
+            return invalidsessionuuid
     elif username_taken:
         for user in username_taken["usernames"]:
             result = users.exists(user)
@@ -96,6 +104,7 @@ def endpoint(endpoint):
         result = not (now < arguments[valid_session_expiry["expiry"]] <= now + 31536000)
         if session_valid["query"]: queries.append(result)
         elif not result: return invalidexpiry
+
 
     return endpoint(Resource, arguments, queries)
 
