@@ -50,41 +50,16 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
-def update_display_name(username, display_name, hash):
+def update(username, hash, biography=False, channel_settings=False, display_name=False, room_settings=False, settings=False):
     try:
-        cursor.execute("UPDATE profiles SET display_name = ? WHERE username = ?", (display_name, username))
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
+        query = "UPDATE profiles SET " #WHERE username = ?
+        if biography: query += "biography = '" + biography + "' "
+        if channel_settings: query += "channel-settings = '" + channel_settings + "' "
+        if display_name: query += "display_name = '" + display_name + "' "
+        if room_settings: query += "room_settings = '" + generation.aes_encrypt(settings, hash) + "' "
+        if settings: query += "settings = '" + generation.aes_encrypt(settings, hash) + "' "
 
-def update_biography(username, biography, hash):
-    try:
-        cursor.execute("UPDATE profiles SET biography = ? WHERE username = ?", (biography, username))
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
-
-def apply_settings(username, settings, hash):
-    try:
-        cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
-
-def apply_room_settings(username, settings, hash):
-    try:
-        cursor.execute("UPDATE users SET room_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
-
-def apply_channel_settings(username, settings, hash):
-    try:
-        cursor.execute("UPDATE users SET channel_settings = ? WHERE username = ?", (generation.aes_encrypt(settings, hash), username))
+        cursor.execute(query + " WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:

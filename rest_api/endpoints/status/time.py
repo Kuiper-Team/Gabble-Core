@@ -1,8 +1,5 @@
 from datetime import datetime
-from timeit import default_timer
-
 import utilities.generation as generation
-from rest_api.presets import nouser, success
 
 class endpoint:
     def __init__(self, arguments, controls, queries):
