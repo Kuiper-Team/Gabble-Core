@@ -26,6 +26,10 @@ missingfile = {
     "success": False,
     "error": "missingfile"
 }, 500
+notallofthemaretrue = { #Kullanılmayacak olan bir hata.
+    "success": False,
+    "error": "notallofthemaretrue"
+} 406
 nopermission = {
     "success": False,
     "error": "nopermission"

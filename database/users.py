@@ -52,14 +52,14 @@ def add_friends(username_1, username_2, hash_1, hash_2):
 
 def update(username, hash, biography=False, channel_settings=False, display_name=False, room_settings=False, settings=False):
     try:
-        query = "UPDATE profiles SET " #WHERE username = ?
-        if biography: query += "biography = '" + biography + "' "
-        if channel_settings: query += "channel-settings = '" + channel_settings + "' "
-        if display_name: query += "display_name = '" + display_name + "' "
-        if room_settings: query += "room_settings = '" + generation.aes_encrypt(settings, hash) + "' "
-        if settings: query += "settings = '" + generation.aes_encrypt(settings, hash) + "' "
+        command = "UPDATE profiles SET " #WHERE username = ?
+        if biography: command += "biography = '" + biography + "' "
+        if channel_settings: command += "channel-settings = '" + channel_settings + "' "
+        if display_name: command += "display_name = '" + display_name + "' "
+        if room_settings: command += "room_settings = '" + generation.aes_encrypt(settings, hash) + "' "
+        if settings: command += "settings = '" + generation.aes_encrypt(settings, hash) + "' "
 
-        cursor.execute(query + " WHERE username = ?", (username,))
+        cursor.execute(command + " WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:

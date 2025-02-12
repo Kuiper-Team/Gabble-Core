@@ -1,6 +1,4 @@
-#https://flask-restful.readthedocs.io/en/latest/
 #Production mode için: https://flask.palletsprojects.com/en/stable/deploying/
-#HATALAR için HTTP hata kodları eklenecek.
 import sqlite3
 from datetime import datetime
 from flask import Flask
@@ -58,6 +56,7 @@ def endpoint(endpoint):
     controls = endpoint.config["controls"]
     queries = []
 
+    check_booleans = controls["check_booleans"]
     fetch_from_db = controls["fetch_from_db"]
     is_integer = controls["is_integer"]
     is_session_user_requested = controls["is_session_user_requested"]
@@ -65,6 +64,12 @@ def endpoint(endpoint):
     username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
     valid_session_expiry = controls["valid_session_expiry"]
+    if check_booleans: #Tuple çıktı
+        result = []
+        for argument in check_booleans:
+            result.append(argument is None)
+        if check_booleans["query"]: queries.append(result)
+        elif not all(result): return notallofthemaretrue
     if fetch_from_db:
         try:
             data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (fetch_from_db["table"], fetch_from_db["row"], arguments[fetch_from_db["where"]])).fetchone()[0]
@@ -74,32 +79,32 @@ def endpoint(endpoint):
             result = True
         if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
-    elif is_integer:
+    if is_integer:
         result = validation.integer(arguments[is_integer["argument"]])
         if is_integer["query"]: queries.append(result)
         elif not result: return invalidformat
-    elif is_session_user_requested:
+    if is_session_user_requested:
         result = arguments[is_session_user_requested["username"]] == session_uuids.owner(arguments[is_session_user_requested["uuid"]])
         if session_valid["query"]: queries.append(result)
         elif not result: return nopermission
-    elif session_valid:
+    if session_valid:
         now = generation.unix_timestamp(datetime.now())
         result = session_uuids.check(arguments[session_valid["uuid"]])
         if session_valid["query"]:
             queries.append(result)
         elif not result:
             return invalidsessionuuid
-    elif username_taken:
+    if username_taken:
         for user in username_taken["usernames"]:
             result = users.exists(user)
             if username_taken["query"]: queries.append(result)
             elif not result: return nouser
-    elif user_exists:
+    if user_exists:
         for user in user_exists["users"]:
             result = users.exists(user)
             if user_exists["query"]: queries.append(result)
             elif not result: return nouser
-    elif valid_session_expiry:
+    if valid_session_expiry:
         now = generation.unix_timestamp(datetime.now())
         result = not (now < arguments[valid_session_expiry["expiry"]] <= now + 31536000)
         if session_valid["query"]: queries.append(result)
