@@ -3,31 +3,21 @@ from uuid import UUID
 
 import utilities.generation as generation
 
-def uuid_v4(uuid_str):
-    object = None
+def uuid(uuid_str, version):
     try:
         object = UUID(uuid_str)
     except ValueError:
         return False
-
-    return object.version == 4
-
-def uuid_v7(uuid_str):
-    object = None
-    try:
-        object = UUID(uuid_str)
-    except ValueError:
-        return False
-
-    return object.version == 7
+    else:
+        return object.version == version
 
 def message_id(message):
     try:
         length = len(message)
         if (
             96 < length <= message.character_limit + 96 and
-            uuid_v7(message[:33]) and
-            uuid_v7(message[33:65])
+            uuid(message[:33], 7) and
+            uuid(message[33:65], 7)
         ):
             return True
         else:

@@ -21,7 +21,7 @@ def create(username, expiry, hash):
     else:
         connection.commit()
 
-def check(uuid):
+def check(uuid): #İndis numarası eklemeyi unutma!
     try:
         data = cursor.execute("SELECT expiry, username FROM session_uuids WHERE uuid = ?", (uuid,)).fetchone()
     except sqlite3.OperationalError:

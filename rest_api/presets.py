@@ -29,7 +29,19 @@ missingfile = {
 notallofthemaretrue = { #Kullanılmayacak olan bir hata.
     "success": False,
     "error": "notallofthemaretrue"
-} 406
+}, 406
+nochannel = {
+    "success": False,
+    "error": "nochannel"
+}, 406
+nomessage = {
+    "success": False,
+    "error": "nomessage"
+}, 406
+noroom = {
+    "success": False,
+    "error": "noroom"
+}, 406
 nopermission = {
     "success": False,
     "error": "nopermission"

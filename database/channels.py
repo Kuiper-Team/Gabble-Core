@@ -19,7 +19,7 @@ def delete(uuid, room_uuid):
     else:
         connection.commit()
 
-def apply_config(title, uuid, settings, permissions_map, tags, hash):
+def update(title, uuid, settings, permissions_map, tags, hash):
     try:
         cursor.execute("UPDATE channels SET title = ?, settings = ?, permissions_map = ?, tags = ?  WHERE uuid = ?", (generation.aes_encrypt(title, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), generation.aes_encrypt(tags, hash), uuid))
     except sqlite3.OperationalError:
