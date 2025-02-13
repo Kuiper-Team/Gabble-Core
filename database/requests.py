@@ -1,3 +1,4 @@
+#BUNUN YERİNE PGP KULLANILABİLİR.
 import sqlite3
 from sys import path
 
