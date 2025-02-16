@@ -3,6 +3,7 @@ import random
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from datetime import datetime
 from string import ascii_letters, digits, punctuation
@@ -50,7 +51,7 @@ def rsa_generate_pair(bits=1024):
     return public_key, private_key
 
 def rsa_encrypt(text, public_key):
-    encoded = str.encode(text)
+    encoded = text.encode()
     rsa_public_key = PKCS1_OAEP.new(RSA.importKey(public_key))
     ciphertext = rsa_public_key.encrypt(encoded)
 
@@ -61,6 +62,9 @@ def rsa_decrypt(ciphertext, private_key):
     decrypted_text = rsa_private_key.decrypt(ciphertext)
 
     return decrypted_text
+
+def random_sha256_hash():
+    return SHA256.new(Random.get_random_bytes(64)).hexdigest()
 
 scl = ascii_letters + digits + punctuation
 def password(length, character_list=scl):

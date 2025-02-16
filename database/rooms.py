@@ -1,15 +1,12 @@
-#ARTIK TYPE OLMAYACAK. DM KANALLARI BİRER ROOM OLMAYACAK.
 import json
 import sqlite3
-from Crypto.Hash import SHA256
-from random import randbytes
 
 import utilities.generation as generation
 from config import room
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
-cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, public_key TEXT NOT NULL, channels TEXT, members TEXT, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
+cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, public_key TEXT NOT NULL, type INTEGER NOT NULL, channels TEXT, members TEXT NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
 #"channels" formatı: kanal_türü_numarası + kanal uuid'si + yıldız + ...
 #"members" formatı: kullanıcı_adı_1,kullanıcı_adı_2,...
 #"permissions_map" formatı:
@@ -28,20 +25,32 @@ cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT
 #   }
 #}
 
-def create(title, username):
+#type için,
+#0: Direkt mesajlaşma odası (iki kişilik)
+#1: Sohbet odası
+def create(title, type, username):
     key_pair = generation.rsa_generate_pair(),
     public_key = key_pair[0]
 
-    administrator_hash = SHA256.new(randbytes(64)).hexdigest()
+    if type == 0: #Hepsine RSA
+        try:
+            cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, type, None, generation.rsa_encrypt(username, public_key), generation.rsa_encrypt(room.default_settings_0 if type == 0 else room.default_settings_1, public_key), generation.rsa_encrypt(room.default_pm.format(username), public_key)))
+        except sqlite3.OperationalError:
+            raise Exception("roomexists")
+        else:
+            connection.commit()
 
-    try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, None, None, generation.aes_encrypt(room.default_settings_0 if type == 0 else room.default_settings_1, administrator_hash), generation.aes_encrypt(room.default_pm.format(username), administrator_hash)))
-    except sqlite3.OperationalError:
-        raise Exception("roomexists")
-    else:
-        connection.commit()
+        return public_key, key_pair
+    elif type == 1: #Hassas olmayan verilere RSA, hassas olanlara AES
+        administrator_hash = generation.random_sha256_hash()
+        try:
+            cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, type, None, generation.rsa_encrypt(username, public_key), generation.aes_encrypt(room.default_settings_0 if type == 0 else room.default_settings_1, administrator_hash), generation.aes_encrypt(room.default_pm.format(username), administrator_hash)))
+        except sqlite3.OperationalError:
+            raise Exception("roomexists")
+        else:
+            connection.commit()
 
-    return public_key, key_pair[1], administrator_hash
+        return public_key, key_pair[1], administrator_hash
 
 def delete(uuid):
     try:
@@ -51,47 +60,45 @@ def delete(uuid):
     else:
         connection.commit()
 
-def create_channel(title, room_uuid, type, settings, permissions_map, tags, hash):
+def create_channel(title, room_uuid, type, settings, permissions_map, tags, public_key, administrator_hash):
     if not 0 <= type <= 1:
         raise Exception("invalidtype")
 
     try:
-        cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(title, hash), uuid_v7().hex, room_uuid, generation.aes_encrypt(type, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), generation.aes_encrypt(tags, hash)))
+        cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, room_uuid, generation.rsa_encrypt(type, public_key), generation.aes_encrypt(settings, public_key), generation.aes_encrypt(permissions_map, administrator_hash), generation.aes_encrypt(tags, administrator_hash)))
     except sqlite3.OperationalError:
         raise Exception("channelexists")
     else:
         connection.commit()
 
-def apply_config(title, uuid, settings, permissions_map, hash):
+def update_title(title, uuid, public_key):
     try:
-        cursor.execute("UPDATE rooms SET title = ?, settings = ?, permissions_map = ?  WHERE uuid = ?", (title, generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), uuid))
+        cursor.execute("UPDATE rooms SET title = ? WHERE uuid = ?", (generation.rsa_encrypt(title, public_key), uuid))
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
         connection.commit()
 
-def members(uuid, hash):
-    members = None
+def update_config(uuid, settings, permission_map, administrator_hash):
     try:
-        members = generation.aes_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash)
+        cursor.execute("UPDATE rooms SET settings = ?, permissions_map = ? WHERE uuid = ?", (generation.aes_encrypt(settings, administrator_hash), generation.aes_encrypt(permission_map, administrator_hash)))
+    except sqlite3.OperationalError:
+        raise Exception("noroom")
+    else:
+        connection.commit()
+
+def members(uuid, private_key):
+    try:
+        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
         return members.split(",")
 
-def owner(uuid):
-    owner = None
-    try:
-        owner = cursor.execute("SELECT owner FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0]
-    except sqlite3.OperationalError:
-        raise Exception("noroom")
-    else:
-        return owner
-
-def has_permissions(uuid, username, permissions, hash):
+def has_permissions(uuid, username, permissions, administrator_hash):
     has_permission = None
     try:
-        pm = json.loads(generation.aes_decrypt(cursor.execute("SELECT permissions_map FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash))
+        pm = json.loads(generation.aes_decrypt(cursor.execute("SELECT permissions_map FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash))
     except sqlite3.OperationalError:
         return False
     else:
@@ -103,14 +110,13 @@ def has_permissions(uuid, username, permissions, hash):
 
         return True
 
-def add_member(new_member, uuid, hash):
-    members = None
-    try:
-        members = generation.aes_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash)
-    except sqlite3.OperationalError:
-        raise Exception("noroom")
-    else:
+def add_member(new_member, uuid, hash): #type 0 ise üye eklenmesine izin verilmeyecektir.
         try:
-            cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (members + "*" + new_member, uuid))
+            members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash)
         except sqlite3.OperationalError:
-            raise Exception("couldntupdate")
+            raise Exception("noroom")
+        else:
+            try:
+                cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (members + "*" + new_member, uuid))
+            except sqlite3.OperationalError:
+                raise Exception("couldntupdate")
