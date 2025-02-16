@@ -1,7 +1,9 @@
 import pyargon2
 import random
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
+from base64 import b64decode, b64encode
+from Crypto import Random
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from datetime import datetime
 from string import ascii_letters, digits, punctuation
 
@@ -29,7 +31,7 @@ def hashed_password(password):
 #encode(): str -> byte
 #decode(): byte -> str
 def aes_encrypt(text, hash):
-    iv = get_random_bytes(16)
+    iv = Random.get_random_bytes(16)
     cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
 
     return iv.decode("utf-8") + cipher.encrypt(text.encode("utf-8")).decode("utf-8")
@@ -39,6 +41,26 @@ def aes_decrypt(ciphertext, hash):
     cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
 
     return cipher.decrypt(ciphertext).decode("utf-8")
+
+def rsa_generate_pair(bits=1024):
+    pair = RSA.generate(bits, Random.new().read)
+    public_key = pair.publickey().exportKey("PEM")
+    private_key = pair.export_key("PEM")
+
+    return public_key, private_key
+
+def rsa_encrypt(text, public_key):
+    encoded = str.encode(text)
+    rsa_public_key = PKCS1_OAEP.new(RSA.importKey(public_key))
+    ciphertext = rsa_public_key.encrypt(encoded)
+
+    return b64encode(ciphertext)
+
+def rsa_decrypt(ciphertext, private_key):
+    rsa_private_key = PKCS1_OAEP.new(RSA.importKey(b64decode(private_key)))
+    decrypted_text = rsa_private_key.decrypt(ciphertext)
+
+    return decrypted_text
 
 scl = ascii_letters + digits + punctuation
 def password(length, character_list=scl):
