@@ -114,9 +114,9 @@ def endpoint(endpoint):
         if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
     if has_access_to_channel:
-        pass #Yeni sistem getirilecek.
+        pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
     if has_access_to_room:
-        pass #Yeni sistem getirilecek.
+        pass #
     if is_integer:
         result = validation.integer(arguments[is_integer["argument"]])
         if is_integer["query"]: queries.append(result)
