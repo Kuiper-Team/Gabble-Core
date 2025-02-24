@@ -11,7 +11,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("username", "session_uuid"),
+        "arguments": ("username", "hash", "session_uuid"),
         "controls": {
             "fetch_from_db": {
                 "query": True,
@@ -20,7 +20,7 @@ class endpoint:
                 "where": "username" #Argüman adı
             },
             "is_session_user_requested": {
-                "query": False,
+                "query": True,
                 "username": "username",
                 "uuid": "session_uuid"
             },
@@ -37,6 +37,7 @@ class endpoint:
     def post(self):
         data = self.queries["fetch_from_db"]
         username = self.arguments["username"]
+        hash = self.arguments["hash"]
         if self.queries[1]:
 
             return {

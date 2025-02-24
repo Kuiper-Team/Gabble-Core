@@ -87,10 +87,12 @@ def endpoint(endpoint):
     controls = endpoint.config["controls"]
     queries = []
 
+    access_to_channel = controls["access_to_channel"]
+    access_to_room = controls["access_to_room"]
+    administrator_hash = controls["administrator_hash"]
+    asd_permission = controls["asd_permission"]
     check_booleans = controls["check_booleans"]
     fetch_from_db = controls["fetch_from_db"]
-    has_access_to_channel = controls["has_access_to_channel"]
-    has_access_to_room = controls["has_access_to_room"]
     is_integer = controls["is_integer"]
     is_session_user_requested = controls["is_session_user_requested"]
     is_uuid = controls["is_uuid"]
@@ -98,6 +100,16 @@ def endpoint(endpoint):
     username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
     valid_session_expiry = controls["valid_session_expiry"]
+    if access_to_channel:
+        pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
+    if access_to_room:
+        pass #
+    if administrator_hash:
+        result = arguments["administrator_hash"] is not None
+        if administrator_hash["query"]: queries.append(result)
+        elif not result: return missingarguments
+    if asd_permission: #asd: access to sensitive data
+        pass #
     if check_booleans: #Tuple çıktı
         result = []
         for argument in check_booleans:
@@ -113,10 +125,6 @@ def endpoint(endpoint):
             result = True
         if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
-    if has_access_to_channel:
-        pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
-    if has_access_to_room:
-        pass #
     if is_integer:
         result = validation.integer(arguments[is_integer["argument"]])
         if is_integer["query"]: queries.append(result)
