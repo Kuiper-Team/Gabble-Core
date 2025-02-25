@@ -1,10 +1,5 @@
-import sqlite3
-
 import utilities.generation as generation
-from database.connection import cursor
-from rest_api.presets import nouser, usepost
-from utilities.generation import rsa_decrypt
-
+from rest_api.presets import usepost
 
 class endpoint:
     def __init__(self, arguments, controls, queries):
@@ -13,29 +8,27 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("uuid", "username", "private_key"),
+        "arguments": ("uuid", "username", "private_key", "administrator_hash"),
         "controls": {
-            "fetch_from_db": {
-                "query": True,
-                "table": "rooms", #Doğrudan tablo adı
-                "row": "uuid", #Doğrudan satır adı
-                "where": "uuid" #Argüman adı
-            },
             "access_to_room": {
                 "query": False, #rooms konusunda herkese açık olarak bakılabilecek pek veri yoktur.
                 "private_key": "private_key",
                 "username": "username",
                 "uuid": "uuid"
             },
-            "administrator_hash": {
-                "query": True,
-                "hash": "administrator_hash"
-            },
             "asd_permission": {
                 "query": True,
+                "type": "type",
                 "private_key": "private_key",
+                "administrator_hash": "administrator_hash",
                 "username": "username",
                 "uuid": "uuid"
+            },
+            "fetch_from_db": {
+                "query": True,
+                "table": "rooms",  # Doğrudan tablo adı
+                "row": "uuid",  # Doğrudan satır adı
+                "where": "uuid"  # Argüman adı
             }
         }
     }

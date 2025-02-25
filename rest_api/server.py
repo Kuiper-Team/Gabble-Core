@@ -104,10 +104,6 @@ def endpoint(endpoint):
         pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
     if access_to_room:
         pass #
-    if administrator_hash:
-        result = arguments["administrator_hash"] is not None
-        if administrator_hash["query"]: queries.append(result)
-        elif not result: return missingarguments
     if asd_permission: #asd: access to sensitive data
         pass #
     if check_booleans: #Tuple çıktı
