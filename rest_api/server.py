@@ -89,17 +89,13 @@ def endpoint(endpoint):
 
     access_to_channel = controls["access_to_channel"]
     access_to_room = controls["access_to_room"]
-    administrator_hash = controls["administrator_hash"]
     asd_permission = controls["asd_permission"]
     check_booleans = controls["check_booleans"]
     fetch_from_db = controls["fetch_from_db"]
     is_integer = controls["is_integer"]
-    is_session_user_requested = controls["is_session_user_requested"]
     is_uuid = controls["is_uuid"]
-    session_valid = controls["session_expired"]
     username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
-    valid_session_expiry = controls["valid_session_expiry"]
     if access_to_channel:
         pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
     if access_to_room:
@@ -125,18 +121,10 @@ def endpoint(endpoint):
         result = validation.integer(arguments[is_integer["argument"]])
         if is_integer["query"]: queries.append(result)
         elif not result: return invalidformat
-    if is_session_user_requested:
-        result = arguments[is_session_user_requested["username"]] == session_uuids.owner(arguments[is_session_user_requested["uuid"]])
-        if is_session_user_requested["query"]: queries.append(result)
-        elif not result: return nopermission
     if is_uuid:
         result = validation.uuid(arguments[is_uuid["uuid"]], is_uuid["version"])
         if is_uuid["query"]: queries.append(result)
         elif not result: return invalidformat
-    if session_valid:
-        result = session_uuids.check(arguments[session_valid["uuid"]])[0]
-        if session_valid["query"]: queries.append(result)
-        elif not result: return invalidsessionuuid
     if username_taken:
         for user in username_taken["usernames"]:
             result = users.exists(user)
@@ -147,11 +135,6 @@ def endpoint(endpoint):
             result = users.exists(user)
             if user_exists["query"]: queries.append(result)
             elif not result: return nouser
-    if valid_session_expiry:
-        now = generation.unix_timestamp(datetime.now())
-        result = not (now < arguments[valid_session_expiry["expiry"]] <= now + 31536000)
-        if session_valid["query"]: queries.append(result)
-        elif not result: return invalidexpiry
 
     return endpoint(Resource, arguments, queries)
 
