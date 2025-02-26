@@ -1,15 +1,10 @@
 #Production mode için: https://flask.palletsprojects.com/en/stable/deploying/
 import sqlite3
-from datetime import datetime
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 
-import database.session_uuids as session_uuids
 import database.users as users
-import utilities.generation as generation
-import utilities.log as log
 import utilities.validation as validation
-from config import rest_api
 from database.connection import cursor
 from presets import *
 
