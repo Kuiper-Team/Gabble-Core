@@ -1,3 +1,7 @@
+alreadyamember = {
+    "success": False,
+    "error": "alreadyamember"
+}, 401
 incorrectpassword = {
     "success": False,
     "error": "incorrectpassword"

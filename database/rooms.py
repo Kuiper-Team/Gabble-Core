@@ -110,9 +110,9 @@ def has_permissions(uuid, username, permissions, administrator_hash):
 
         return True
 
-def add_member(new_member, uuid, hash): #type 0 ise üye eklenmesine izin verilmeyecektir.
+def add_member(new_member, uuid, private_key): #type 0 ise üye eklenmesine izin verilmeyecektir.
         try:
-            members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], hash)
+            members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
         except sqlite3.OperationalError:
             raise Exception("noroom")
         else:
