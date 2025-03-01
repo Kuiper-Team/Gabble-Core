@@ -96,7 +96,6 @@ def members(uuid, private_key):
         return members.split(",")
 
 def has_permissions(uuid, username, permissions, administrator_hash):
-    has_permission = None
     try:
         pm = json.loads(generation.aes_decrypt(cursor.execute("SELECT permissions_map FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash))
     except sqlite3.OperationalError:
@@ -120,3 +119,11 @@ def add_member(new_member, uuid, private_key): #type 0 ise üye eklenmesine izin
                 cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (members + "*" + new_member, uuid))
             except sqlite3.OperationalError:
                 raise Exception("couldntupdate")
+
+def public_key(uuid):
+    try:
+        public_key = cursor.execute("SELECT public_key FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        raise Exception("noroom")
+    else:
+        return public_key

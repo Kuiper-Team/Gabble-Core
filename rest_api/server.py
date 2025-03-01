@@ -6,6 +6,7 @@ from flask_restful import Api, Resource, reqparse
 import database.users as users
 import utilities.validation as validation
 from database.connection import cursor
+from database.rooms import has_permissions
 from presets import *
 
 app = Flask(__name__)
@@ -87,6 +88,7 @@ def endpoint(endpoint):
     asd_permission = controls["asd_permission"]
     check_booleans = controls["check_booleans"]
     fetch_from_db = controls["fetch_from_db"]
+    has_permission = controls["fetch_from_db"]
     is_integer = controls["is_integer"]
     is_uuid = controls["is_uuid"]
     username_taken = controls["username_taken"]
@@ -97,7 +99,7 @@ def endpoint(endpoint):
         pass #
     if asd_permission: #asd: access to sensitive data
         pass #
-    if check_booleans: #Tuple çıktı
+    if check_booleans: #List çıktı
         result = []
         for argument in check_booleans:
             result.append(argument is None)
@@ -112,6 +114,10 @@ def endpoint(endpoint):
             result = True
         if fetch_from_db["query"]: queries.append(result)
         elif not result: return nouser
+    if has_permission:
+        result = has_permissions(has_permission["uuid"], has_permission["username"], has_permission["permission"], arguments[has_permission["administrator_hash"]])
+        if has_permission["query"]: queries.append(result)
+        elif not result: return nopermission
     if is_integer:
         result = validation.integer(arguments[is_integer["argument"]])
         if is_integer["query"]: queries.append(result)

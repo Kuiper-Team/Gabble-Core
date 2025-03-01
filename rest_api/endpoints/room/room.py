@@ -19,7 +19,6 @@ class endpoint:
             "asd_permission": {
                 "query": True,
                 "type": "type",
-                "private_key": "private_key",
                 "administrator_hash": "administrator_hash",
                 "username": "username",
                 "uuid": "uuid"
