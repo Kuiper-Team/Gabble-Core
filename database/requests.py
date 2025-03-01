@@ -1,4 +1,4 @@
-#BUNUN YERİNE PGP KULLANILABİLİR.
+#BUNUN YERİNE HASH İLE ONAYLAMA KULLANILABİLİR.
 import sqlite3
 from sys import path
 
@@ -8,7 +8,13 @@ import utilities.generation as generation
 from database.connection import connection, cursor
 from uuid import uuid4
 
-cursor.execute("CREATE TABLE IF NOT EXISTS requests (sender TEXT NOT NULL, recipient TEXT NOT NULL, uuid TEXT NOT NULL, type INTEGER NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid))")
+cursor.execute("""CREATE TABLE IF NOT EXISTS requests (
+sender TEXT NOT NULL, recipient TEXT NOT NULL,
+uuid TEXT NOT NULL,
+type INTEGER NOT NULL,
+expiry INTEGER NOT NULL,
+PRIMARY KEY (uuid))
+""")
 
 #type değeri için:
 #0: Arkadaşlık isteği

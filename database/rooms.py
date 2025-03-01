@@ -6,7 +6,16 @@ from config import room
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
-cursor.execute("CREATE TABLE IF NOT EXISTS rooms (title TEXT NOT NULL, uuid TEXT NOT NULL, public_key TEXT NOT NULL, type INTEGER NOT NULL, channels TEXT, members TEXT NOT NULL, settings TEXT NOT NULL, permissions_map TEXT NOT NULL, PRIMARY KEY (uuid))")
+cursor.execute("""CREATE TABLE IF NOT EXISTS rooms (
+title TEXT NOT NULL, uuid TEXT NOT NULL,
+public_key TEXT NOT NULL,
+type INTEGER NOT NULL,
+channels TEXT,
+members TEXT NOT NULL,
+settings TEXT NOT NULL,
+permissions_map TEXT NOT NULL,
+PRIMARY KEY (uuid))
+""")
 #"channels" formatı: kanal_türü_numarası + kanal uuid'si + yıldız + ...
 #"members" formatı: kullanıcı_adı_1,kullanıcı_adı_2,...
 #"permissions_map" formatı:
