@@ -32,7 +32,7 @@ def delete(uuid, room_uuid, channel_uuid):
     else:
         connection.commit()
 
-def edit_message(new_message, uuid, room_uuid, channel_uuid):
+def edit(new_message, uuid, room_uuid, channel_uuid):
     try:
         cursor.execute("UPDATE messages SET new_message = ? WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (generation.aes_encrypt(new_message, hash), uuid, room_uuid, channel_uuid))
     except sqlite3.OperationalError:

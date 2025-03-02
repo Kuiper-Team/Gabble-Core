@@ -2,6 +2,8 @@ import sqlite3
 from datetime import datetime
 from sys import path
 
+from utilities.generation import aes_encrypt
+
 path.append("..")
 
 import utilities.generation as generation
@@ -12,21 +14,19 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS users (
 username TEXT NOT NULL,
 display_name TEXT,
 toc INTEGER NOT NULL,
-hash TEXT NOT NULL,
 settings TEXT NOT NULL,
 room_settings TEXT,
 channel_settings TEXT,
 friends TEXT,
 biography TEXT,
-key_chain BLOB,
+key_chain TEXT NOT NULL,
 PRIMARY KEY (username))
 """)
 
 def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), hash, generation.aes_encrypt(database.default_user_settings, hash), None, None, None))
-        cursor.execute("INSERT INTO profiles VALUES (?, ?, ?)", (username, None, 0))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), generation.aes_encrypt(database.default_user_settings, hash), None, None, generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
@@ -62,6 +62,7 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
+#Bu şablon olarak kullanılabilir.
 def update(username, hash, biography=False, channel_settings=False, display_name=False, room_settings=False, settings=False):
     try:
         command = "UPDATE profiles SET " #WHERE username = ?
@@ -85,6 +86,12 @@ def exists(username):
     else:
         return True
 
+def verify_hash(username, hash):
+    try:
+        return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        return False
+
 def check_credentials(username, password):
     hash = generation.hashed_password(password)
     try:
@@ -92,10 +99,3 @@ def check_credentials(username, password):
     except sqlite3.OperationalError:
         return False
 
-def get_hash(username):
-    try:
-        hash = cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        return hash
