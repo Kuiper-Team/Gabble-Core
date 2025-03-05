@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from hashlib import sha256
 from sys import path
 
 path.append("..")
@@ -25,7 +26,7 @@ PRIMARY KEY (username))
 def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), generation.aes_encrypt(database.default_user_settings, hash), None, None, generation.random_sha256_hash(), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), generation.aes_encrypt(database.default_user_settings, hash), None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
