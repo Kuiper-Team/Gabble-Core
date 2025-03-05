@@ -2,8 +2,6 @@ import sqlite3
 from datetime import datetime
 from sys import path
 
-from utilities.generation import aes_encrypt
-
 path.append("..")
 
 import utilities.generation as generation
@@ -19,6 +17,7 @@ room_settings TEXT,
 channel_settings TEXT,
 friends TEXT,
 biography TEXT,
+request_hash TEXT NOT NULL,
 key_chain TEXT NOT NULL,
 PRIMARY KEY (username))
 """)
@@ -26,7 +25,7 @@ PRIMARY KEY (username))
 def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), generation.aes_encrypt(database.default_user_settings, hash), None, None, generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (username, generation.unix_timestamp(datetime.now()), generation.aes_encrypt(database.default_user_settings, hash), None, None, generation.random_sha256_hash(), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
@@ -62,7 +61,9 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
-#Bu şablon olarak kullanılabilir.
+#OUTDATED
+#For döngüsü lazım.
+#Teker teker yapmaya gerek yok. Komutta yalnızca bir tane sütunun değerinin ne olacağını belirtirsek yalnızca orayı güncelleyecektir.
 def update(username, hash, biography=False, channel_settings=False, display_name=False, room_settings=False, settings=False):
     try:
         command = "UPDATE profiles SET " #WHERE username = ?
@@ -99,3 +100,4 @@ def check_credentials(username, password):
     except sqlite3.OperationalError:
         return False
 
+#append_to_key_chain() ve delete_from_key_chain() yazılacak.

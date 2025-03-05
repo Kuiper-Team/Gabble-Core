@@ -1,6 +1,9 @@
-#BUNUN YERİNE HASH İLE ONAYLAMA KULLANILABİLİR.
 import sqlite3
+
+import pyargon2
 from sys import path
+
+from utilities.generation import aes_encrypt
 
 path.append("..")
 
@@ -9,24 +12,30 @@ from database.connection import connection, cursor
 from uuid import uuid4
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS requests (
-sender TEXT NOT NULL, recipient TEXT NOT NULL,
 uuid TEXT NOT NULL,
-type INTEGER NOT NULL,
+requester TEXT NOT NULL,
 expiry INTEGER NOT NULL,
+result TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """)
 
-#type değeri için:
-#0: Arkadaşlık isteği
-def send(sender, recipient, message, type, expiry, hash):
+def create(requester, expiry, result, passcode):
     try:
-        cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?, ?, ?)", (sender, recipient, uuid4().hex, type, expiry))
+        request_hash = cursor.execute("SELECT request_hash FROM users WHERE username = ?", (requester,)).fetchone()[0]
     except sqlite3.OperationalError:
-        raise Exception("couldntinsert")
+        raise Exception("nouser")
     else:
         connection.commit()
 
-def cancel(uuid):
+        hash = pyargon2.hash(request_hash, passcode)
+        try:
+            cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?)", (uuid4().hex, requester, aes_encrypt(expiry, hash), aes_encrypt(result, hash)))
+        except sqlite3.OperationalError:
+            raise Exception("couldntinsert")
+
+    return hash
+
+def withdraw(uuid):
     try:
         cursor.execute("DELETE FROM requests WHERE uuid = ?", (uuid,))
     except sqlite3.OperationalError:
