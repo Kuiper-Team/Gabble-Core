@@ -49,7 +49,7 @@ def create(title, type, username):
         else:
             connection.commit()
 
-        return public_key, key_pair
+        return public_key, key_pair[1]
     elif type == 1: #Hassas olmayan verilere RSA, hassas olanlara AES
         administrator_hash = generation.random_sha256_hash()
         try:

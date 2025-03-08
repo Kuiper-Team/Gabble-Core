@@ -12,7 +12,7 @@ from database.connection import connection, cursor
 cursor.execute("""CREATE TABLE IF NOT EXISTS users (
 username TEXT NOT NULL,
 display_name TEXT,
-toc INTEGER NOT NULL,
+public_key TEXT NOT NULL,
 settings TEXT NOT NULL,
 room_settings TEXT,
 channel_settings TEXT,

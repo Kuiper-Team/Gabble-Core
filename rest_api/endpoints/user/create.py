@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import database.session_uuids as session_uuids
 import database.users as users
 import utilities.generation as generation
 from rest_api.presets import incorrectpassword, invalidusername, usepost
@@ -47,18 +46,10 @@ class endpoint:
                 "error": code
             }
         else:
-            try:
-                session_uuids.create(self.arguments.username, generation.unix_timestamp(datetime.now()) + 86400, hash) #İlk oturum açılışında 1 gün süre verilir.
-            except Exception as code:
-                return {
-                    "success": False,
-                    "error": code
+            return {
+                "success": True,
+                "user": {
+                    "username": self.arguments.username,
+                    "hash": hash
                 }
-            else:
-                return {
-                    "success": True,
-                    "user": {
-                        "username": self.arguments.username,
-                        "hash": generation.hashed_password(self.arguments.password)
-                    }
-                }
+            }
