@@ -1,12 +1,9 @@
 import sqlite3
 
 import pyargon2
-from sys import path
 
-from utilities.generation import aes_encrypt
-
-path.append("..")
-
+import database.rooms as rooms
+import database.users as users
 import utilities.generation as generation
 from database.connection import connection, cursor
 from uuid import uuid4
@@ -29,7 +26,7 @@ def create(requester, expiry, result, passcode):
 
         hash = pyargon2.hash(request_hash, passcode)
         try:
-            cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?)", (uuid4().hex, requester, aes_encrypt(expiry, hash), aes_encrypt(result, hash)))
+            cursor.execute("INSERT INTO requests VALUES (?, ?, ?, ?)", (uuid4().hex, requester, generation.aes_encrypt(expiry, hash), generation.aes_encrypt(result, hash)))
         except sqlite3.OperationalError:
             raise Exception("couldntinsert")
 
@@ -42,3 +39,22 @@ def withdraw(uuid):
         raise Exception("norequest")
     else:
         connection.commit()
+
+#result için kodlar:
+#f: Arkadaşlık isteği
+#i: Oda daveti
+def accept(uuid, passcode, room_private_key = None):
+    try:
+        requester = cursor.execute("SELECT requester FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
+        result = generation.aes_decrypt(cursor.execute("SELECT result FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0], pyargon2.hash(cursor.execute("SELECT request_hash FROM users WHERE username = ?", (requester,)).fetchone()[0], passcode)).split(",")
+    except sqlite3.OperationalError:
+        raise Exception("norequest")
+    else:
+        if result[0] == "f": #f,username1,username2
+            users.add_friends(result[1], result[2])
+        elif result[0] == "i" and room_private_key: #i,uuid,username
+            rooms.add_member(result[2], result[1], room_private_key)
+        else:
+            raise Exception("invalidrequest")
+
+        withdraw(uuid)

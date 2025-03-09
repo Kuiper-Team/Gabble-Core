@@ -18,7 +18,7 @@ PRIMARY KEY (uuid))
 
 def create(message, room_uuid, channel_uuid, hash):
     try:
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid_v7().hex, room_uuid, channel_uuid))
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", (generation.aes_encrypt(message, hash), uuid_v7().hex, room_uuid, channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:

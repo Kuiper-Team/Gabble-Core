@@ -7,7 +7,8 @@ import utilities.generation as generation
 from database.connection import connection, cursor
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS channels (
-title TEXT NOT NULL, uuid TEXT NOT NULL,
+title TEXT NOT NULL,
+uuid TEXT NOT NULL,
 room_uuid TEXT NOT NULL,
 type INTEGER NOT NULL,
 settings TEXT NOT NULL,
