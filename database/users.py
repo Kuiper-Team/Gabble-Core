@@ -1,5 +1,5 @@
+import json
 import sqlite3
-from datetime import datetime
 from hashlib import sha256
 from sys import path
 
@@ -94,10 +94,35 @@ def verify_hash(username, hash):
         return False
 
 def check_credentials(username, password):
-    hash = generation.hashed_password(password)
     try:
-        return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0], hash
+        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
     except sqlite3.OperationalError:
         return False
 
-#append_to_key_chain() ve delete_from_key_chain() yazılacak.
+def key_chain(username, hash):
+    try:
+       dictionary = generation.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash)
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        return json.loads(dictionary)
+
+def append_to_key_chain(username, hash, label, key):
+    try:
+        dictionary = key_chain(username, hash)
+    except Exception as code:
+        raise Exception(code)
+    else:
+        json_data = json.dumps(dictionary.update({label: key}))
+        cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
+        cursor.commit()
+
+def delete_from_key_chain(username, hash, label):
+    try:
+        dictionary = key_chain(username, hash)
+    except Exception as code:
+        raise Exception(code)
+    else:
+        json_data = json.dumps(dictionary.pop(label))
+        cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
+        cursor.commit()
