@@ -1,9 +1,6 @@
 import json
 import sqlite3
 from hashlib import sha256
-from sys import path
-
-path.append("..")
 
 import utilities.generation as generation
 from config import database
@@ -18,6 +15,7 @@ channel_settings TEXT,
 friends TEXT,
 biography TEXT,
 request_hash TEXT NOT NULL,
+inbox TEXT NOT NULL,
 key_chain TEXT NOT NULL,
 PRIMARY KEY (username))
 """)
@@ -25,7 +23,7 @@ PRIMARY KEY (username))
 def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(database.default_user_settings, hash), None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(database.default_user_settings, hash), None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
@@ -110,4 +108,32 @@ def delete_from_key_chain(username, hash, label):
     else:
         json_data = json.dumps(dictionary.pop(label))
         cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
+        cursor.commit()
+
+def inbox(username, hash):
+    try:
+       dictionary = generation.aes_decrypt(cursor.execute("SELECT inbox FROM users WHERE username = ?", (username,)).fetchone()[0], hash)
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        return json.loads(dictionary)
+
+def append_to_inbox(username, hash, label, key):
+    try:
+        dictionary = key_chain(username, hash)
+    except Exception as code:
+        raise Exception(code)
+    else:
+        json_data = json.dumps(dictionary.update({label: key}))
+        cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
+        cursor.commit()
+
+def delete_from_inbox(username, hash, label):
+    try:
+        dictionary = key_chain(username, hash)
+    except Exception as code:
+        raise Exception(code)
+    else:
+        json_data = json.dumps(dictionary.pop(label))
+        cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
         cursor.commit()
