@@ -1,16 +1,10 @@
 import pyargon2
-import random
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from datetime import datetime
-from string import ascii_letters, digits, punctuation
-
-#Kullanılan şifreleme metotları:
-#1. Argon2 (hash) -> Bir veriyi kullanıcı HASH'İ İLE güvenli bir şekilde şifreleyip saklamak istediğimizde...
-#2. SHA256 (hash) + AES -> Bir veriyi hızlı deşifre edilebilmek üzere kullanıcı HASH'İ İLE şifreleyip saklamak istediğimizde...
 
 def add_zeros(number, full_digit_c): #Pozitif tam sayılar içindir.
     number_str = str(number)
@@ -65,11 +59,3 @@ def rsa_decrypt(ciphertext, private_key):
 
 def random_sha256_hash():
     return SHA256.new(Random.get_random_bytes(64)).hexdigest()
-
-scl = ascii_letters + digits + punctuation
-def password(length, character_list=scl):
-    password = ""
-    for character in range(length):
-        password += random.choice(character_list)
-
-    return password

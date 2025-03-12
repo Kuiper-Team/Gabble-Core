@@ -1,7 +1,4 @@
 import sqlite3
-from sys import path
-
-path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor
@@ -27,10 +24,5 @@ def delete(uuid, room_uuid):
     else:
         connection.commit()
 
-def update(title, uuid, settings, permissions_map, tags):
-    try:
-        cursor.execute("UPDATE channels SET title = ?, settings = ?, permissions_map = ?, tags = ?  WHERE uuid = ?", (generation.aes_encrypt(title, hash), generation.aes_encrypt(settings, hash), generation.aes_encrypt(permissions_map, hash), generation.aes_encrypt(tags, hash), uuid))
-    except sqlite3.OperationalError:
-        raise Exception("nochannel")
-    else:
-        connection.commit()
+def update(): #Hazırlanacak.
+    pass

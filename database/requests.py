@@ -1,5 +1,6 @@
-import sqlite3
+#İstekler client tarafından nasıl taranacak?
 
+import sqlite3
 import pyargon2
 
 import database.rooms as rooms
