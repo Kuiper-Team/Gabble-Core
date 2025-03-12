@@ -41,7 +41,7 @@ def withdraw(uuid):
     else:
         connection.commit()
 
-#result için kodlar:
+#type için kodlar:
 #f: Arkadaşlık isteği
 #i: Oda daveti
 def accept(uuid, passcode, room_private_key = None):

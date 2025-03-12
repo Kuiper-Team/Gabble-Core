@@ -10,12 +10,13 @@ from utilities.uuidv7 import uuid_v7
 cursor.execute("""CREATE TABLE IF NOT EXISTS messages (
 message TEXT NOT NULL,
 uuid TEXT NOT NULL,
-room_uuid TEXT NOT NULL,
+room_uuid TEXT,
 channel_uuid TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """
 )
 
+#Direkt mesajlar room_uuid içermeyecek.
 def create(message, room_uuid, channel_uuid, public_key):
     try:
         cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid_v7().hex, room_uuid, channel_uuid))

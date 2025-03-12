@@ -30,6 +30,3 @@ def delete(uuid):
         raise Exception("noconversation")
     else:
         connection.commit()
-
-def update(): #Hazırlanacak.
-    pass

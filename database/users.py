@@ -31,13 +31,15 @@ def create(username, password):
 
         return hash
 
-def delete(username):
+def delete(username, hash):
     try:
         cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
         connection.commit()
+
+        #Üye olunan odalardan da silinecek.
 
 def add_friends(username_1, username_2, hash_1, hash_2):
     try:
@@ -59,8 +61,35 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         else:
             connection.commit()
 
-def update(): #Hazırlanacak.
-    pass
+def update(username, display_name=None, settings=None, room_settings=None, channel_settings=None, biography=None):
+    if display_name:
+        try:
+            cursor.execute("UPDATE users SET display_name = ? WHERE username = ?", (display_name, username))
+        except sqlite3.OperationalError:
+            raise Exception("nouser")
+        else:
+            connection.commit()
+    if settings:
+        try:
+            cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (display_name, username))
+        except sqlite3.OperationalError:
+            raise Exception("nouser")
+        else:
+            connection.commit()
+    if room_settings:
+        try:
+            cursor.execute("UPDATE users SET room_settings = ? WHERE username = ?", (display_name, username))
+        except sqlite3.OperationalError:
+            raise Exception("nouser")
+        else:
+            connection.commit()
+    if channel_settings:
+        try:
+            cursor.execute("UPDATE users SET channel_settings = ? WHERE username = ?", (display_name, username))
+        except sqlite3.OperationalError:
+            raise Exception("nouser")
+        else:
+            connection.commit()
 
 def exists(username):
     try:
@@ -98,7 +127,8 @@ def append_to_key_chain(username, hash, label, key):
     else:
         json_data = json.dumps(dictionary.update({label: key}))
         cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
-        cursor.commit()
+
+        connection.commit()
 
 def delete_from_key_chain(username, hash, label):
     try:
@@ -108,7 +138,8 @@ def delete_from_key_chain(username, hash, label):
     else:
         json_data = json.dumps(dictionary.pop(label))
         cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
-        cursor.commit()
+
+        connection.commit()
 
 def inbox(username, hash):
     try:
@@ -126,7 +157,8 @@ def append_to_inbox(username, hash, label, key):
     else:
         json_data = json.dumps(dictionary.update({label: key}))
         cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
-        cursor.commit()
+
+        connection.commit()
 
 def delete_from_inbox(username, hash, label):
     try:
@@ -136,4 +168,5 @@ def delete_from_inbox(username, hash, label):
     else:
         json_data = json.dumps(dictionary.pop(label))
         cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
-        cursor.commit()
+
+        connection.commit()
