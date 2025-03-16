@@ -10,7 +10,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("title", "uuid", "type", "settings", "permissions_map", "tags", "username", "administrator_hash"),
+        "arguments": ("title", "uuid", "type", "settings", "permissions_map", "tags", "username", "hash", "administrator_hash"),
         "controls": {
             "access_to_room": {
                 "query": False,
@@ -31,6 +31,11 @@ class endpoint:
                 "username": "username",
                 "permission": ""
             },
+            "verify_hash": {
+                "query": False,
+                "username": "username",
+                "hash": "hash"
+            }
         }
     }
 

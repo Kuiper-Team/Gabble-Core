@@ -10,7 +10,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("uuid", "private_key", "administrator_hash"),
+        "arguments": ("username", "hash", "uuid", "private_key", "administrator_hash"),
         "controls": {
             "asd_permission": {
                 "query": True,
@@ -19,6 +19,11 @@ class endpoint:
                 "administrator_hash": "administrator_hash",
                 "username": "username",
                 "uuid": "uuid"
+            },
+            "verify_hash": {
+                "query": False,
+                "username": "username",
+                "hash": "hash"
             }
         }
     }

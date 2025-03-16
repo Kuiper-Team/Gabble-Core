@@ -28,6 +28,11 @@ class endpoint:
                 "table": "rooms",  # Doğrudan tablo adı
                 "row": "uuid",  # Doğrudan satır adı
                 "where": "uuid"  # Argüman adı
+            },
+            "verify_hash": {
+                "query": True,
+                "username": "username",
+                "hash": "hash"
             }
         }
     }
@@ -36,11 +41,10 @@ class endpoint:
         return usepost
 
     def post(self):
-        data = self.queries["fetch_from_db"]
+        data = self.queries[1]
         administrator_hash = self.arguments["administrator_hash"]
         private_key = self.arguments["private_key"]
-        type = data[3]
-        if self.queries[1]:
+        if self.queries[0] and self.queries[2]:
             return {
                 "success": True,
                 "data": {
@@ -52,8 +56,8 @@ class endpoint:
                     },
                     "sensitive": {
                         "public_key": data[2],
-                        "settings": generation.rsa_decrypt(data[6], private_key) if type == 0 else generation.aes_decrypt(data[6], administrator_hash),
-                        "permission_map": generation.rsa_decrypt(data[7], private_key) if type == 0 else generation.aes_decrypt(data[7], administrator_hash)
+                        "settings": generation.rsa_decrypt(data[6], private_key),
+                        "permission_map": generation.rsa_decrypt(data[7], private_key)
                     }
                 },
             }
