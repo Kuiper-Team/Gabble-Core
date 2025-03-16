@@ -2,6 +2,10 @@ alreadyamember = {
     "success": False,
     "error": "alreadyamember"
 }, 401
+incorrecthash = {
+    "success": False,
+    "error": "incorrecthash"
+}, 401
 incorrectpassword = {
     "success": False,
     "error": "incorrectpassword"
@@ -13,10 +17,6 @@ invalidexpiry = {
 invalidformat = {
     "success": False,
     "error": "invalidformat"
-}, 406
-invalidsessionuuid = {
-    "success": False,
-    "error": "invalidsessionuuid"
 }, 406
 invalidusername = {
     "success": False,

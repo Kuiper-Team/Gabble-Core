@@ -8,13 +8,18 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("uuid", "username", "private_key"),
+        "arguments": ("uuid", "username", "hash", "private_key"),
         "controls": {
             "access_to_room": {
                 "query": False,
                 "private_key": "private_key",
                 "username": "username",
                 "uuid": "uuid"
+            },
+            "verify_hash": {
+                "query": False,
+                "username": "username",
+                "hash": "hash"
             }
         }
     }

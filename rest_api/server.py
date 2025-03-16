@@ -1,12 +1,15 @@
 #Production mode için: https://flask.palletsprojects.com/en/stable/deploying/
+import json
 import sqlite3
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 
 import database.users as users
+import utilities.generation as generation
 import utilities.validation as validation
 from database.connection import cursor
 from database.rooms import has_permissions
+from map import map
 from presets import *
 
 app = Flask(__name__)
@@ -14,66 +17,8 @@ api = Api(app)
 
 parser = reqparse.RequestParser()
 parser.add_argument(
-    "biography",
-    "channel_settings",
-    "expiry",
-    "message",
-    "password",
-    "permission_map"
-    "recipient",
-    "room_settings",
-    "sender",
-    "session_uuid",
-    "settings",
-    "title",
-    "type",
-    "username",
+    #(...)
 )
-
-import endpoints
-
-map = { #Tüm endpoint isimleri karşılık geldikleri classlara eşleştirilecek.
-    "channel": {
-        "channel": endpoints.channel.channel.endpoint
-    },
-    "friend_request": {
-        "friend_request": endpoints.friend_request.friend_request.endpoint,
-        "accept": endpoints.friend_request.accept.endpoint,
-        "cancel": endpoints.friend_request.cancel.endpoint,
-        "decline": endpoints.friend_request.decline.endpoint,
-        "send": endpoints.friend_request.send.endpoint
-    },
-    "message": {
-
-    },
-    "room": {
-        "room": endpoints.room.room.endpoint,
-        "create": endpoints.room.create.endpoint,
-        "create_channel": endpoints.room.create_channel.endpoint,
-        "delete": endpoints.room.delete.endpoint,
-        "join": endpoints.room.join.endpoint,
-        "updadte": endpoints.room.update.endpoint
-    },
-    "room_invite": {
-
-    },
-    "session": {
-        "session": endpoints.session.session.endpoint,
-        "new": endpoints.session.new.endpoint,
-        "terminate": endpoints.session.terminate.endpoint
-    },
-    "status": {
-        "status": endpoints.status.status.endpoint,
-        "past_announcements": endpoints.status.past_announcements.endpoint,
-        "time": endpoints.status.time
-    },
-    "user": {
-        "user": endpoints.user.user.endpoint,
-        "create": endpoints.user.create.endpoint,
-        "delete": endpoints.user.delete.endpoint,
-        "update": endpoints.user.update.endpoint
-    }
-}
 
 def endpoint(endpoint):
     arguments = parser.parse_args()
@@ -93,6 +38,7 @@ def endpoint(endpoint):
     is_uuid = controls["is_uuid"]
     username_taken = controls["username_taken"]
     user_exists = controls["user_exists"]
+    verify_hash = controls["verify_hash"]
     if access_to_channel:
         pass #Veri tabanından permissions alınacak ve şifresi çözülecek, o veri okunarak karar verilecek.
     if access_to_room:
@@ -136,6 +82,18 @@ def endpoint(endpoint):
             result = users.exists(user)
             if user_exists["query"]: queries.append(result)
             elif not result: return nouser
+    if verify_hash:
+        try:
+            try:
+                key_chain = cursor.execute("SELECT key_chain FROM users WHERE username = ?", (arguments[verify_hash["username"]],))
+            except sqlite3.OperationalError:
+                if verify_hash["query"]: queries.append(False)
+                else: return nouser
+            else:
+                parsed = json.loads(generation.aes_decrypt(key_chain, arguments[verify_hash["hash"]]))
+        except ValueError:
+            if verify_hash["query"]: queries.append(False)
+            else: return incorrecthash
 
     return endpoint(Resource, arguments, queries)
 
@@ -148,5 +106,5 @@ def error_404(error):
         "error": "notfound",
     }, 404
 
-#API'ye eklemeler burada olacak.
+#API'ye eklemeler burada olacak. For döngüsü kullanılacak.
 #API eklemeleri gerçekleşince ve sunucu başlatılınca log edilecek.

@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import database.users as users
-import utilities.generation as generation
 from rest_api.presets import incorrectpassword, invalidusername, usepost
 
 class endpoint:

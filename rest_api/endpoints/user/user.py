@@ -1,8 +1,5 @@
-import sqlite3
-
 import utilities.generation as generation
-from database.connection import cursor
-from rest_api.presets import nouser, usepost
+from rest_api.presets import usepost
 
 class endpoint:
     def __init__(self, arguments, controls, queries):
@@ -11,7 +8,7 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("username", "hash", "session_uuid"),
+        "arguments": ("username", "hash"),
         "controls": {
             "fetch_from_db": {
                 "query": True,
@@ -19,14 +16,10 @@ class endpoint:
                 "row": "username", #Doğrudan satır adı
                 "where": "username" #Argüman adı
             },
-            "is_session_user_requested": {
+            "verify_hash": {
                 "query": True,
                 "username": "username",
-                "uuid": "session_uuid"
-            },
-            "session_valid": {
-                "query": False,
-                "uuid": "session_uuid"
+                "hash": "hash"
             }
         }
     }
@@ -39,7 +32,6 @@ class endpoint:
         username = self.arguments["username"]
         hash = self.arguments["hash"]
         if self.queries[1]:
-
             return {
                 "success": True,
                 "data": {

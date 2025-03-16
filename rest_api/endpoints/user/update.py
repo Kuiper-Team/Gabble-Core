@@ -11,20 +11,16 @@ class endpoint:
         self.queries = queries
 
     config = {
-        "arguments": ("username", "session_uuid"),
+        "arguments": ("username", "hash"),
         "controls": {
             "check_booleans": {
                 "query": True,
                 "booleans": ("biography", "channel_settings", "display_name", "room_settings", "settings")
             },
-            "is_session_user_requested": {
-                "query": True,
-                "username": "username",
-                "uuid": "session_uuid"
-            },
-            "session_valid": {
+            "verify_hash": {
                 "query": False,
-                "uuid": "session_uuid"
+                "username": "username",
+                "hash": "hash"
             }
         }
     }
