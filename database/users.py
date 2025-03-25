@@ -6,7 +6,7 @@ import utilities.generation as generation
 from config import database
 from database.connection import connection, cursor
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS users (
+cursor.execute("""CREATE TABLE IF NOT EXISTS user (
 username TEXT NOT NULL,
 display_name TEXT,
 settings TEXT NOT NULL,
@@ -23,7 +23,7 @@ PRIMARY KEY (username))
 def create(username, password):
     hash = generation.hashed_password(password)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(database.default_user_settings, hash), None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(database.default_user_settings, hash), None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
@@ -33,7 +33,7 @@ def create(username, password):
 
 def delete(username, hash):
     try:
-        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+        cursor.execute("DELETE FROM user WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
@@ -43,8 +43,8 @@ def delete(username, hash):
 
 def add_friends(username_1, username_2, hash_1, hash_2):
     try:
-        encrypted_1 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_1,)).fetchone()[0]
-        encrypted_2 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_2,)).fetchone()[0]
+        encrypted_1 = cursor.execute("SELECT friends FROM user WHERE username = ?", (username_1,)).fetchone()[0]
+        encrypted_2 = cursor.execute("SELECT friends FROM user WHERE username = ?", (username_2,)).fetchone()[0]
 
         friends_1 = generation.aes_decrypt(encrypted_1, hash_1)
         friends_2 = generation.aes_decrypt(encrypted_2, hash_2)
@@ -54,8 +54,8 @@ def add_friends(username_1, username_2, hash_1, hash_2):
         try:
             new_encrypted_1 = generation.aes_encrypt(friends_1 + "," + username_2, hash_1)
             new_encrypted_2 = generation.aes_encrypt(friends_2 + "," + username_1, hash_2)
-            cursor.execute("INSERT OR REPLACE INTO users (friends) VALUES(?) WHERE username = ?", (new_encrypted_1, username_1))
-            cursor.execute("INSERT OR REPLACE INTO users (friends) VALUES(?) WHERE username = ?", (new_encrypted_2, username_2))
+            cursor.execute("INSERT OR REPLACE INTO user (friends) VALUES(?) WHERE username = ?", (new_encrypted_1, username_1))
+            cursor.execute("INSERT OR REPLACE INTO user (friends) VALUES(?) WHERE username = ?", (new_encrypted_2, username_2))
         except sqlite3.OperationalError:
             raise Exception("couldntinsert")
         else:
@@ -64,28 +64,28 @@ def add_friends(username_1, username_2, hash_1, hash_2):
 def update(username, display_name=None, settings=None, room_settings=None, channel_settings=None, biography=None):
     if display_name:
         try:
-            cursor.execute("UPDATE users SET display_name = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET display_name = ? WHERE username = ?", (display_name, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
             connection.commit()
     if settings:
         try:
-            cursor.execute("UPDATE users SET settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET settings = ? WHERE username = ?", (display_name, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
             connection.commit()
     if room_settings:
         try:
-            cursor.execute("UPDATE users SET room_settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET room_settings = ? WHERE username = ?", (display_name, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
             connection.commit()
     if channel_settings:
         try:
-            cursor.execute("UPDATE users SET channel_settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET channel_settings = ? WHERE username = ?", (display_name, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
@@ -93,7 +93,7 @@ def update(username, display_name=None, settings=None, room_settings=None, chann
 
 def exists(username):
     try:
-        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+        cursor.execute("SELECT username FROM user WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         return False
     else:
@@ -101,19 +101,19 @@ def exists(username):
 
 def verify_hash(username, hash):
     try:
-        return hash == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
+        return hash == cursor.execute("SELECT hash FROM user WHERE username = ?", (username,)).fetchone()[0]
     except sqlite3.OperationalError:
         return False
 
 def check_credentials(username, password):
     try:
-        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM users WHERE username = ?", (username,)).fetchone()[0]
+        return generation.hashed_password(password) == cursor.execute("SELECT hash FROM user WHERE username = ?", (username,)).fetchone()[0]
     except sqlite3.OperationalError:
         return False
 
 def key_chain(username, hash):
     try:
-       dictionary = generation.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash)
+       dictionary = generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username,)).fetchone()[0], hash)
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
@@ -126,7 +126,7 @@ def append_to_key_chain(username, hash, label, key):
         raise Exception(code)
     else:
         json_data = json.dumps(dictionary.update({label: key}))
-        cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
+        cursor.execute("UPDATE user SET key_chain = ? WHERE username = ?", (json_data, username))
 
         connection.commit()
 
@@ -137,13 +137,13 @@ def delete_from_key_chain(username, hash, label):
         raise Exception(code)
     else:
         json_data = json.dumps(dictionary.pop(label))
-        cursor.execute("UPDATE users SET key_chain = ? WHERE username = ?", (json_data, username))
+        cursor.execute("UPDATE user SET key_chain = ? WHERE username = ?", (json_data, username))
 
         connection.commit()
 
 def inbox(username, hash):
     try:
-       dictionary = generation.aes_decrypt(cursor.execute("SELECT inbox FROM users WHERE username = ?", (username,)).fetchone()[0], hash)
+       dictionary = generation.aes_decrypt(cursor.execute("SELECT inbox FROM user WHERE username = ?", (username,)).fetchone()[0], hash)
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
@@ -156,7 +156,7 @@ def append_to_inbox(username, hash, label, key):
         raise Exception(code)
     else:
         json_data = json.dumps(dictionary.update({label: key}))
-        cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
+        cursor.execute("UPDATE user SET inbox = ? WHERE username = ?", (json_data, username))
 
         connection.commit()
 
@@ -167,6 +167,6 @@ def delete_from_inbox(username, hash, label):
         raise Exception(code)
     else:
         json_data = json.dumps(dictionary.pop(label))
-        cursor.execute("UPDATE users SET inbox = ? WHERE username = ?", (json_data, username))
+        cursor.execute("UPDATE user SET inbox = ? WHERE username = ?", (json_data, username))
 
         connection.commit()

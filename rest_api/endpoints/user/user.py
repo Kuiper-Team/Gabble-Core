@@ -12,7 +12,7 @@ class endpoint:
         "controls": {
             "fetch_from_db": {
                 "query": True,
-                "table": "users", #Doğrudan tablo adı
+                "table": "user", #Doğrudan tablo adı
                 "row": "username", #Doğrudan satır adı
                 "where": "username" #Argüman adı
             },

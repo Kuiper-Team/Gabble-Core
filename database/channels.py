@@ -15,7 +15,7 @@ tags TEXT,
 PRIMARY KEY (uuid))
 """)
 
-#create yok, rooms.py'a bakınız.
+#create yok, user.py'a bakınız.
 
 def delete(uuid, room_uuid, public_key, private_key):
     try:

@@ -19,7 +19,7 @@ PRIMARY KEY (uuid))
 
 def create(requester, expiry, result, passcode):
     try:
-        request_hash = cursor.execute("SELECT request_hash FROM users WHERE username = ?", (requester,)).fetchone()[0]
+        request_hash = cursor.execute("SELECT request_hash FROM user WHERE username = ?", (requester,)).fetchone()[0]
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
@@ -47,7 +47,7 @@ def withdraw(uuid):
 def accept(uuid, passcode, room_private_key = None):
     try:
         requester = cursor.execute("SELECT requester FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0]
-        result = generation.aes_decrypt(cursor.execute("SELECT result FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0], pyargon2.hash(cursor.execute("SELECT request_hash FROM users WHERE username = ?", (requester,)).fetchone()[0], passcode)).split(",")
+        result = generation.aes_decrypt(cursor.execute("SELECT result FROM requests WHERE uuid = ?", (uuid,)).fetchone()[0], pyargon2.hash(cursor.execute("SELECT request_hash FROM user WHERE username = ?", (requester,)).fetchone()[0], passcode)).split(",")
     except sqlite3.OperationalError:
         raise Exception("norequest")
     else:

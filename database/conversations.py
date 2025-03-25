@@ -6,7 +6,7 @@ from utilities.uuidv7 import uuid_v7
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS conversations (
 uuid TEXT NOT NULL,
-users TEXT NOT NULL,
+user TEXT NOT NULL,
 public_key TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """)
