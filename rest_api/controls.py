@@ -24,7 +24,7 @@ def check_parameters(parameters, requested):
 
 def fetch_from_db(parameters, table, where, value_parameter):
     try:
-        data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, parameters[value])).fetchone()[0]
+        data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, parameters[value_parameter])).fetchone()[0]
     except sqlite3.OperationalError:
         return None
     else:

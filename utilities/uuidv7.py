@@ -1,4 +1,4 @@
-#Kaynak: https://codereview.stackexchange.com/q/294707
+#Source: https://codereview.stackexchange.com/q/294707
 import datetime
 import random
 import time

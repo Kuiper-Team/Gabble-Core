@@ -19,28 +19,25 @@ finally:
 api = Flask(__name__)
 
 #The Endpoint Decorator:
-def endpoint(route):
-    def wrapper():
-        if request.method == "GET": route(request.args)
-        if request.method == "POST": route(request.form)
-        else: route()
-
-    return wrapper
+def fetch_parameters():
+    if request.method == "GET":
+        return request.args
+    if request.method == "POST":
+        return request.form
+    else:
+        return {}
 
 #Endpoints:
 @api.route("/", methods=["GET", "POST"])
-@endpoint
-def route(parameters): e.home.route(parameters)
-
-@api.route("/user", methods=["GET", "POST"])
-@api.route("/user/", methods=["GET", "POST"])
-@endpoint
-def route(parameters): e.user.user.route(parameters)
+def home(): e.home.route(fetch_parameters())
 
 @api.route("/channel", methods=["GET", "POST"])
 @api.route("/channel/", methods=["GET", "POST"])
-@endpoint
-def route(parameters): e.channel.channel.route(parameters)
+def channel(): e.channel.channel.route(fetch_parameters())
+
+@api.route("/user", methods=["GET", "POST"])
+@api.route("/user/", methods=["GET", "POST"])
+def user(): e.user.user.route(fetch_parameters())
 
 #Errors:
 @api.errorhandler(404)
