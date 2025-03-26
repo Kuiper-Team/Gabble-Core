@@ -1,6 +1,9 @@
 from flask import jsonify
 
-def route(arguments):
+from api import api
+
+@api.route("/", methods=["GET", "POST"])
+def route(parameters):
     return jsonify(
         {
             "success": True,

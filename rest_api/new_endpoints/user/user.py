@@ -5,7 +5,10 @@ from flask import jsonify
 import rest_api.controls as controls
 import rest_api.presets as presets
 import utilities.generation as generation
+from api import api
 
+@api.route("/user", methods=["GET", "POST"])
+@api.route("/user/", methods=["GET", "POST"])
 def route(parameters):
     hash = parameters["hash"]
     username = parameters["username"]

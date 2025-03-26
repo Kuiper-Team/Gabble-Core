@@ -5,7 +5,10 @@ from flask import jsonify
 import rest_api.controls as controls
 import rest_api.presets as presets
 from database.connection import cursor
+from api import api
 
+@api.route("/channel", methods=["GET", "POST"])
+@api.route("/channel/", methods=["GET", "POST"])
 def route(parameters):
     private_key = parameters["private_key"]
     username = parameters["username"]
