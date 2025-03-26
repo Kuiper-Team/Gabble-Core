@@ -6,7 +6,7 @@ import rest_api.controls as controls
 import rest_api.presets as presets
 import utilities.generation as generation
 
-def user(parameters):
+def route(parameters):
     hash = parameters["hash"]
     username = parameters["username"]
 

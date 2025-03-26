@@ -6,7 +6,7 @@ import rest_api.controls as controls
 import rest_api.presets as presets
 from database.connection import cursor
 
-def channel(parameters):
+def route(parameters):
     private_key = parameters["private_key"]
     username = parameters["username"]
     uuid = parameters["uuid"]

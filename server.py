@@ -30,12 +30,17 @@ def endpoint(route):
 #Endpoints:
 @api.route("/", methods=["GET", "POST"])
 @endpoint
-def route(parameters): e.home.home(parameters)
+def route(parameters): e.home.route(parameters)
 
 @api.route("/user", methods=["GET", "POST"])
-@api.route("/users/", methods=["GET", "POST"])
+@api.route("/user/", methods=["GET", "POST"])
 @endpoint
-def route(parameters): e.user.user(parameters)
+def route(parameters): e.user.user.route(parameters)
+
+@api.route("/channel", methods=["GET", "POST"])
+@api.route("/channel/", methods=["GET", "POST"])
+@endpoint
+def route(parameters): e.channel.channel.route(parameters)
 
 #Errors:
 @api.errorhandler(404)

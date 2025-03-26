@@ -1,6 +1,6 @@
 from flask import jsonify
 
-def home(arguments):
+def route(arguments):
     return jsonify(
         {
             "success": True,
