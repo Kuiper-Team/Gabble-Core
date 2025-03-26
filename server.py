@@ -30,12 +30,12 @@ def endpoint(route):
 #Endpoints:
 @api.route("/", methods=["GET", "POST"])
 @endpoint
-def route(arguments): e.home.home(arguments)
+def route(parameters): e.home.home(parameters)
 
 @api.route("/user", methods=["GET", "POST"])
 @api.route("/users/", methods=["GET", "POST"])
 @endpoint
-def route(arguments): e.user.user(arguments)
+def route(parameters): e.user.user(parameters)
 
 #Errors:
 @api.errorhandler(404)

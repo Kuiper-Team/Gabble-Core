@@ -1,72 +1,52 @@
-alreadyamember = {
+alreadyamember = { #401
     "success": False,
     "error": "alreadyamember"
-}, 401
-incorrecthash = {
+}
+incorrecthash = { #401
     "success": False,
     "error": "incorrecthash"
-}, 401
-incorrectpassword = {
+}
+incorrectpassword = { #401
     "success": False,
     "error": "incorrectpassword"
-}, 401
-invalidexpiry = {
+}
+invalidexpiry = { #406
     "success": False,
     "error": "invalidexpiry"
-}, 406 #(?)
-invalidformat = {
+}
+invalidformat = { #406
     "success": False,
     "error": "invalidformat"
-}, 406
-invalidusername = {
+}
+invalidusername = { #406
     "success": False,
     "error": "invalidusername"
-}, 406
-missingarguments = {
+}
+missingarguments = { #406
     "success": False,
     "error": "missingargument"
-}, 406
-missingfile = {
-    "success": False,
-    "error": "missingfile"
-}, 500
-notallofthemaretrue = { #Kullanılmayacak olan bir hata.
-    "success": False,
-    "error": "notallofthemaretrue"
-}, 406
-nochannel = {
+}
+nochannel = { #406
     "success": False,
     "error": "nochannel"
-}, 406
-nomessage = {
+}
+nomessage = { #406
     "success": False,
     "error": "nomessage"
-}, 406
-noroom = {
+}
+noroom = { #406
     "success": False,
     "error": "noroom"
-}, 406
-nopermission = {
+}
+nopermission = { #403
     "success": False,
     "error": "nopermission"
-}, 403
-nouser = {
+}
+nouser = { #406
     "success": False,
     "error": "nouser"
-}, 406
-success = {
+}
+success = { #200
     "success": True,
     "error": "success"
-}, 201 #201 Created
-unrecognizedlocale = {
-    "success": False,
-    "error": "unrecognizedlocale"
 }
-useget = {
-    "success": False,
-    "error": "useget"
-}, 501
-usepost = {
-    "success": False,
-    "error": "usepost"
-}, 501
