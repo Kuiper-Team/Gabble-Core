@@ -17,14 +17,9 @@ def add_zeros(number, full_digit_c): #Pozitif tam sayılar içindir.
 def unix_timestamp(date_time):
     return datetime.timestamp(date_time) * 1000
 
-def hashed_password(password):
-    length = len(password)
-    slice_index = length // 2 if length % 2 else length // 2 + 1
+def hashed_password(password, salt):
+    return pyargon2.hash(password, salt)
 
-    return pyargon2.hash(password[:slice_index], password[slice_index:])
-
-#encode(): str -> byte
-#decode(): byte -> str
 def aes_encrypt(text, hash):
     iv = Random.get_random_bytes(16)
     cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)

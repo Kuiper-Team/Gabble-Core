@@ -1,6 +1,6 @@
 alreadyamember = { #401
     "success": False,
-    "error": "alreadyamember"
+    "error": "alreadyamember",
 }
 incorrecthash = { #401
     "success": False,
@@ -46,7 +46,26 @@ nouser = { #406
     "success": False,
     "error": "nouser"
 }
-success = { #200
-    "success": True,
-    "error": "success"
+success_200 = { #200
+    "success": True
+}
+success_201 = { #201
+    "success": True
+}
+
+#Dictionary Storing Status Codes:
+status_codes = {
+    "alreadyamember": 401,
+    "incorrecthash": 401,
+    "incorrectpassword": 401,
+    "invalidexpiry": 406,
+    "invalidformat": 406,
+    "invalidusername": 406,
+    "missingarguments": 406,
+    "nochannel": 406,
+    "nomessage": 406,
+    "noroom": 406,
+    "nopermission": 403,
+    "nouser": 406,
+    "success": 200, #200 is preferred over 201 here.
 }
