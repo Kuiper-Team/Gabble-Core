@@ -73,21 +73,28 @@ def update(username, display_name=None, settings=None, room_settings=None, chann
             connection.commit()
     if settings:
         try:
-            cursor.execute("UPDATE user SET settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET settings = ? WHERE username = ?", (settings, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
             connection.commit()
     if room_settings:
         try:
-            cursor.execute("UPDATE user SET room_settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET room_settings = ? WHERE username = ?", (room_settings, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:
             connection.commit()
     if channel_settings:
         try:
-            cursor.execute("UPDATE user SET channel_settings = ? WHERE username = ?", (display_name, username))
+            cursor.execute("UPDATE user SET channel_settings = ? WHERE username = ?", (channel_settings, username))
+        except sqlite3.OperationalError:
+            raise Exception("nouser")
+        else:
+            connection.commit()
+    if biography:
+        try:
+            cursor.execute("UPDATE user SET channel_settings = ? WHERE username = ?", (biography, username))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:

@@ -1,59 +1,51 @@
-alreadyamember = { #401
+alreadyamember = {
     "success": False,
     "error": "alreadyamember",
 }
-incorrecthash = { #401
+incorrecthash = {
     "success": False,
     "error": "incorrecthash"
 }
-incorrectpassword = { #401
-    "success": False,
-    "error": "incorrectpassword"
-}
-invalidexpiry = { #406
+invalidexpiry = {
     "success": False,
     "error": "invalidexpiry"
 }
-invalidformat = { #406
+invalidformat = {
     "success": False,
     "error": "invalidformat"
 }
-invalidusername = { #406
+invalidusername = {
     "success": False,
     "error": "invalidusername"
 }
-missingarguments = { #406
+missingarguments = {
     "success": False,
     "error": "missingargument"
 }
-nochannel = { #406
+nochannel = {
     "success": False,
     "error": "nochannel"
 }
-nomessage = { #406
+nomessage = {
     "success": False,
     "error": "nomessage"
 }
-noroom = { #406
+noroom = {
     "success": False,
     "error": "noroom"
 }
-nopermission = { #403
+nopermission = {
     "success": False,
     "error": "nopermission"
 }
-nouser = { #406
+nouser = {
     "success": False,
     "error": "nouser"
 }
-success_200 = { #200
+success = {
     "success": True
 }
-success_201 = { #201
-    "success": True
-}
-
-#Dictionary Storing Status Codes:
+#Dictionary for Error Status Codes:
 status_codes = {
     "alreadyamember": 401,
     "incorrecthash": 401,
@@ -67,5 +59,4 @@ status_codes = {
     "noroom": 406,
     "nopermission": 403,
     "nouser": 406,
-    "success": 200, #200 is preferred over 201 here.
 }

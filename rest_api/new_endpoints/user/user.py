@@ -1,5 +1,4 @@
 import json
-
 from flask import jsonify
 
 import rest_api.controls as controls

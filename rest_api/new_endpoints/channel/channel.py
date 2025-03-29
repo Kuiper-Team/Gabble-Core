@@ -1,5 +1,4 @@
 import sqlite3
-
 from flask import jsonify
 
 import rest_api.controls as controls
@@ -15,7 +14,7 @@ def route(parameters):
     uuid = parameters["uuid"]
 
     if controls.check_parameters(parameters, ["username", "uuid", "private_key"]):
-        controls.access_to_channel(username, uuid, private_key)
+        if not controls.access_to_channel(username, uuid, private_key): return jsonify(presets.nopermission, status=403)
     else:
         return jsonify(presets.missingarguments, status=406)
 
@@ -24,10 +23,13 @@ def route(parameters):
     except sqlite3.OperationalError:
         return jsonify(presets.nochannel, status=406)
     except Exception as code:
-        return {
-            "success": False,
-            "error": code
-        }
+        return jsonify(
+            {
+                "success": False,
+                "error": code
+            },
+            status=presets.status_codes[code]
+        )
 
     return jsonify(
         {

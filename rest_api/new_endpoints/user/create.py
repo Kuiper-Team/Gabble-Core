@@ -1,9 +1,9 @@
 from flask import jsonify
 
 import rest_api.controls as controls
+import rest_api.presets as presets
 import database.users as users
 from api import api
-from rest_api.presets import alreadyamember, incorrectpassword, invalidusername, missingarguments, status_codes
 
 @api.route("/user/create", methods=["GET", "POST"])
 @api.route("/user/create/", methods=["GET", "POST"])
@@ -11,11 +11,14 @@ def route(parameters):
     username = parameters["username"]
     password = parameters["password"]
 
-    if not controls.check_parameters(parameters, ["username", "password"]): return missingarguments
+    if controls.check_parameters(parameters, ["username", "password"]):
+
+    else:
+        return presets.missingarguments
 
     if controls.user_exists(parameters["username"]):
         return jsonify(
-            alreadyamember,
+            presets.alreadyamember,
             status=401
         )
 
@@ -23,12 +26,12 @@ def route(parameters):
         3 <= len(username) <= 36 and
         18 <= len(password) <= 45 and
         all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in password)
-    ): return jsonify(invalidusername, status=406)
+    ): return jsonify(presets.invalidusername, status=406)
 
     try:
         password.decode("ascii")
     except UnicodeDecodeError:
-        return jsonify(incorrectpassword, status=401)
+        return jsonify(presets.incorrectpassword, status=401)
 
     try:
         hash, salt = users.create(username, password)
@@ -38,7 +41,7 @@ def route(parameters):
                 "success": False,
                 "error": code
             },
-            status=status_codes[code]
+            status=presets.status_codes[code]
         )
 
     return jsonify(
@@ -60,7 +63,7 @@ def reference():
                 "GET": True,
                 "POST": True
             },
-            "description": "",
+            "description": "Registers a new user to the database using provided information.",
             "sample_request": {},
             "sample_response": {}
         },
