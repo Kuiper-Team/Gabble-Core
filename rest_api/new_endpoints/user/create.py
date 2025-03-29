@@ -11,16 +11,10 @@ def route(parameters):
     username = parameters["username"]
     password = parameters["password"]
 
-    if controls.check_parameters(parameters, ["username", "password"]):
-
+    if controls.check_parameters(parameters, ("username", "password")):
+        if controls.user_exists(username): return jsonify(presets.userexists, status=401)
     else:
-        return presets.missingarguments
-
-    if controls.user_exists(parameters["username"]):
-        return jsonify(
-            presets.alreadyamember,
-            status=401
-        )
+        return jsonify(presets.missingarguments, status=406)
 
     if not (
         3 <= len(username) <= 36 and

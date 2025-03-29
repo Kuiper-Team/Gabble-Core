@@ -15,8 +15,8 @@ def route(parameters):
     settings = parameters["settings"]
     username = parameters["username"]
 
-    if controls.check_parameters(parameters, ["username", "hash"]):
-        if not controls.verify_hash(parameters, username, hash): return jsonify(presets.incorrecthash)
+    if controls.check_parameters(parameters, ("username", "hash")):
+        if not controls.verify_hash(parameters, username, hash): return jsonify(presets.incorrecthash, status=401)
     else:
         return jsonify(presets.missingarguments, 406)
 

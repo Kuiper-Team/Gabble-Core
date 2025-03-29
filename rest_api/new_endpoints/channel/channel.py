@@ -13,7 +13,7 @@ def route(parameters):
     username = parameters["username"]
     uuid = parameters["uuid"]
 
-    if controls.check_parameters(parameters, ["username", "uuid", "private_key"]):
+    if controls.check_parameters(parameters, ("username", "uuid", "private_key")):
         if not controls.access_to_channel(username, uuid, private_key): return jsonify(presets.nopermission, status=403)
     else:
         return jsonify(presets.missingarguments, status=406)

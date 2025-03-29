@@ -42,6 +42,11 @@ nouser = {
     "success": False,
     "error": "nouser"
 }
+userexists = {
+    "success": False,
+    "error": "userexists"
+}
+
 success = {
     "success": True
 }
@@ -59,4 +64,5 @@ status_codes = {
     "noroom": 406,
     "nopermission": 403,
     "nouser": 406,
+    "userexists": 406
 }

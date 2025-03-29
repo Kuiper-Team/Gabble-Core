@@ -41,7 +41,7 @@ def delete(username, hash):
     else:
         connection.commit()
 
-    #Üye olunan odalardan da silinecek.
+    #key_chain kullanılarak üye olunan odalardan da silinecek.
 
 def add_friends(username_1, username_2, hash_1, hash_2):
     try:

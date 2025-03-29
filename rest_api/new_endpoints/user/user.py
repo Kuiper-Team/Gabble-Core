@@ -14,7 +14,7 @@ def route(parameters):
 
     data = controls.fetch_from_db(parameters, "users", "username", "username")
 
-    if controls.check_parameters(parameters, ["username", "hash"]):
+    if controls.check_parameters(parameters, ("username", "hash")):
         if not controls.user_exists(username): return jsonify(presets.nouser, status=406)
         access = controls.verify_hash(parameters, username, hash)
     else:
