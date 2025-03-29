@@ -3,7 +3,6 @@ import sqlite3
 from datetime import datetime
 
 import utilities.generation as generation
-from config import room
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
@@ -13,8 +12,8 @@ uuid TEXT NOT NULL,
 public_key TEXT NOT NULL,
 channels TEXT,
 members TEXT NOT NULL,
-settings TEXT NOT NULL,
-permissions_map TEXT NOT NULL
+settings TEXT,
+permissions_map TEXT,
 PRIMARY KEY (uuid))
 """)
 #"permissions_map" formatı:
@@ -38,7 +37,7 @@ def create(title, username):
     public_key = key_pair[0]
     administrator_hash = generation.random_sha256_hash()
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, None, generation.rsa_encrypt(username, public_key), generation.aes_encrypt(room.default_settings_0 if type == 0 else room.default_settings_1, administrator_hash), generation.aes_encrypt(room.default_pm.format(username), administrator_hash)))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, None, generation.rsa_encrypt(username, public_key), None, None, administrator_hash))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:

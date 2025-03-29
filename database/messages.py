@@ -16,7 +16,6 @@ PRIMARY KEY (uuid))
 """
 )
 
-#Direkt mesajlar room_uuid içermeyecek.
 def create(message, room_uuid, channel_uuid, public_key):
     try:
         cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid_v7().hex, room_uuid, channel_uuid))

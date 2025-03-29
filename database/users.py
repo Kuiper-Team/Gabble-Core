@@ -4,13 +4,12 @@ from Crypto.Random import get_random_bytes
 from hashlib import sha256
 
 import utilities.generation as generation
-from config import database
 from database.connection import connection, cursor
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS user (
 username TEXT NOT NULL,
 display_name TEXT,
-settings TEXT NOT NULL,
+settings TEXT,
 room_settings TEXT,
 channel_settings TEXT,
 friends TEXT,
@@ -25,7 +24,7 @@ def create(username, password):
     salt = get_random_bytes(16)
     hash = generation.hashed_password(password, salt)
     try:
-        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(database.default_user_settings, hash), None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, None, None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
