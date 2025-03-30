@@ -1,8 +1,9 @@
 #I might implement CORS, rate limit and JWT too.
 #For CORS, see http://medium.com/@mterrano1/cors-in-a-flask-api-38051388f8cc
-from flask import Flask
+from flask import Flask, json
 
 api = Flask(__name__)
+json.provider.DefaultJSONProvider.sort_keys = False
 
 from endpoints import home
 from endpoints.channel import channel, create
