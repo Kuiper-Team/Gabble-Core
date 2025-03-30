@@ -13,6 +13,13 @@ from endpoints.request import request, accept, decline, withdraw
 from endpoints.room import room, create, delete, join, update
 from endpoints.user import user, create, delete, update
 
+@api.errorhandler(400)
+def error_400(error):
+    return {
+        "success": False,
+        "error": "badrequest"
+    }, 400
+
 @api.errorhandler(404)
 def error_404(error):
     return {
@@ -31,7 +38,7 @@ def error_405(error):
 def error_416(error):
     return {
         "success": False,
-        "error": "unsupportedtype"
+        "error": "unsupportedmediatype"
     }, 415
 
 @api.errorhandler(500)
