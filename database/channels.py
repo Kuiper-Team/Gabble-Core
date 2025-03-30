@@ -1,5 +1,8 @@
 import json
 import sqlite3
+import sys
+
+sys.path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor

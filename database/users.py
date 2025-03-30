@@ -1,12 +1,15 @@
 import json
 import sqlite3
+import sys
 from Crypto.Random import get_random_bytes
 from hashlib import sha256
+
+sys.path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS user (
+cursor.execute("""CREATE TABLE IF NOT EXISTS users (
 username TEXT NOT NULL,
 display_name TEXT,
 settings TEXT,

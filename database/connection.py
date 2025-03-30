@@ -1,20 +1,18 @@
 #The database file will always be saved to the same path.
+import os
 import sqlite3
-from sys import path
-
-path.append("..")
+from pathlib import Path
 
 import utilities.log as log
 
-file_name = "database"
+file_name = "database.db"
 
-connection = None
 try:
-    connection = sqlite3.connect("{}.db".format(file_name))
+    connection = sqlite3.connect(os.path.join(Path.cwd(), file_name), check_same_thread=False)
 except sqlite3.OperationalError:
-    log.failure("\"{}.db\" veri tabanına bağlanılamadı.".format(file_name))
+    log.failure("\"{}\" veri tabanına bağlanılamadı.".format(file_name))
     exit(1)
 else:
-    log.success("\"{}.db\" veri tabanına bağlanıldı.".format(file_name))
+    log.success("\"{}\" veri tabanına bağlanıldı.".format(file_name))
 
 cursor = connection.cursor()

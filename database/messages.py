@@ -1,7 +1,7 @@
 import sqlite3
-from sys import path
+import sys
 
-path.append("..")
+sys.path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor

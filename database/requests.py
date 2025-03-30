@@ -1,7 +1,10 @@
 #İstekler client tarafından nasıl taranacak?
 
 import sqlite3
+import sys
 import pyargon2
+
+sys.path.append("..")
 
 import database.rooms as rooms
 import database.users as users
