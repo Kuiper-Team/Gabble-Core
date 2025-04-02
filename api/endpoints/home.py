@@ -10,7 +10,8 @@ def home():
             "reference": "/reference",
             "channel": {
                 "channel": "/channel",
-                "create": "/channel/create"
+                "create": "/channel/create",
+                "update_permissions": "/room/update_permissions"
             },
             "conversation": {
                 "conversation": "/conversation",
@@ -34,7 +35,11 @@ def home():
                 "create": "/room/create",
                 "delete": "/room/delete",
                 "join": "/room/join",
-                "update": "/room/update"
+                "update": "/room/update",
+                "update_permissions": "/room/update_permissions",
+
+                "member": "/member",
+                "kick": "/member/kick"
             },
             "user": {
                 "user": "/user",

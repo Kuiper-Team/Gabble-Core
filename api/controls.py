@@ -11,10 +11,18 @@ def access_to_channel(username, uuid, private_key):
     pass
 
 def access_to_room(username, uuid, private_key):
-    pass
+    if username in rooms.members(uuid, private_key):
+        return True
+    else:
+        return False
 
-def asd_permission(username, uuid, private_key):
-    pass
+def access_to_sensitive_data(uuid, administrator_hash):
+    try:
+        result = cursor.execute("SELECT administrator_hash FROM rooms WHERE uuid = ?", (uuid,))
+    except sqlite3.OperationalError:
+        return False
+
+    return administrator_hash == result
 
 def check_parameters(parameters, requested):
     for parameter in requested:
@@ -33,8 +41,8 @@ def fetch_from_db(parameters, table, where, value_parameter):
     else:
         return data
 
-def has_permission(parameters, username, uuid, permission, administrator_hash):
-    return rooms.has_permissions(uuid, username, permission, parameters[administrator_hash])
+def has_permissions(parameters, username, uuid, permissions, administrator_hash):
+    return rooms.has_permissions(uuid, username, permissions, parameters[administrator_hash])
 
 def is_integer(parameters, argument):
     return validation.integer(parameters[argument])
