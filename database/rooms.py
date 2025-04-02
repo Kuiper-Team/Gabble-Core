@@ -77,11 +77,11 @@ def has_permissions(uuid, username, requested, administrator_hash):
     except sqlite3.OperationalError:
         return False
     else:
+        result = []
         for permission in requested:
-            if not permissions["members"][username][permission]:
-                return False
+            result.append(permissions["members"][username][permission])
 
-        return True
+        return result
 
 #Permissions will be decided later.
 def update_permissions_tag(uuid, administrator_hash, title, color=None,
