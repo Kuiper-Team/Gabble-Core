@@ -2,6 +2,10 @@ alreadyamember = {
     "success": False,
     "error": "alreadyamember",
 }, 401
+channelexists = {
+    "success": False,
+    "error": "channelexists"
+}, 406
 incorrecthash = {
     "success": False,
     "error": "incorrecthash"
@@ -13,10 +17,6 @@ invalidexpiry = {
 invalidformat = {
     "success": False,
     "error": "invalidformat"
-}, 406
-invalidusername = {
-    "success": False,
-    "error": "invalidusername"
 }, 406
 missingparameter = {
     "success": False,
@@ -42,6 +42,10 @@ nouser = {
     "success": False,
     "error": "nouser"
 }, 406
+roomexists = {
+    "success": False,
+    "error": "roomexists",
+}, 406
 userexists = {
     "success": False,
     "error": "userexists"
@@ -53,15 +57,16 @@ success = { #Use along with a status code, either 200 or 201.
 #Dictionary for Error Status Codes:
 status_codes = {
     "alreadyamember": 401,
+    "channelexists": 406,
     "incorrecthash": 401,
     "invalidexpiry": 406,
     "invalidformat": 406,
-    "invalidusername": 406,
-    "missingarguments": 406,
+    "missingparameter": 406,
     "nochannel": 406,
     "nomessage": 406,
     "noroom": 406,
     "nopermission": 403,
     "nouser": 406,
+    "roomexists": 406,
     "userexists": 406
 }

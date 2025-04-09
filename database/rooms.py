@@ -42,17 +42,18 @@ default_permissions = json.dumps(
 )
 
 def create(title, username):
-    key_pair = generation.rsa_generate_pair(),
+    key_pair = generation.rsa_generate_pair()
     public_key = key_pair[0]
     administrator_hash = generation.random_sha256_hash()
+    uuid = uuid_v7().hex
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, public_key, None, generation.rsa_encrypt(username, public_key), None, generation.aes_encrypt(default_permissions, administrator_hash), administrator_hash))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), None, generation.aes_encrypt(default_permissions, administrator_hash), administrator_hash))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:
         connection.commit()
 
-        return public_key, key_pair[1], administrator_hash
+        return public_key, key_pair[1], administrator_hash, uuid
 
 def delete(uuid):
     try:
