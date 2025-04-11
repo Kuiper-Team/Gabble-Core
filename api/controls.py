@@ -1,3 +1,4 @@
+#Format validation function should be coded inside utilities/validation.py!
 import json
 import sqlite3
 
@@ -16,14 +17,6 @@ def access_to_room(username, uuid, private_key):
     else:
         return False
 
-def access_to_sensitive_data(uuid, administrator_hash):
-    try:
-        result = cursor.execute("SELECT administrator_hash FROM rooms WHERE uuid = ?", (uuid,))
-    except sqlite3.OperationalError:
-        return False
-
-    return administrator_hash == result
-
 def check_parameters(parameters, requested):
     for parameter in requested:
         try:
@@ -33,7 +26,7 @@ def check_parameters(parameters, requested):
 
     return True
 
-def fetch_from_db(parameters, table, where, value):
+def fetch_from_db(table, where, value):
     try:
         data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, value)).fetchone()[0]
     except sqlite3.OperationalError:
@@ -41,25 +34,30 @@ def fetch_from_db(parameters, table, where, value):
     else:
         return data
 
-def has_permissions(parameters, username, uuid, permissions, administrator_hash):
-    return rooms.has_permissions(uuid, username, permissions, parameters[administrator_hash])
-
-def is_integer(parameters, argument):
-    return validation.integer(parameters[argument])
-
-def is_uuid(parameters, argument, version):
-    return validation.uuid(parameters[argument], version)
+def has_permissions(username, uuid, permissions, administrator_hash):
+    return rooms.has_permissions(uuid, username, permissions, administrator_hash)
 
 def user_exists(username):
     return users.exists(username)
 
-def verify_hash(parameters, username, hash):
+def verify_administrator_hash(uuid, administrator_hash):
     try:
-        try:
-            key_chain = cursor.execute("SELECT key_chain FROM user WHERE username = ?", (parameters[username],)).fetchone()[0]
-        except sqlite3.OperationalError:
-            return False
-        else:
-            json.loads(generation.aes_decrypt(key_chain, parameters[hash]))
-    except ValueError:
+        settings = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)), administrator_hash))
+    except Exception:
         return False
+    else:
+        return True
+
+def verify_hash(username, hash):
+    try:
+        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username)).fetchone()[0], hash))
+    except Exception:
+        return False
+
+def verify_private_key(uuid, private_key):
+    try:
+        title = generation.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)), private_key)
+    except Exception:
+        return False
+    else:
+        return title.isascii()

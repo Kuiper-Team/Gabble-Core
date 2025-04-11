@@ -43,6 +43,3 @@ def user_create():
                     "salt": salt
                 }
             }, 201
-
-def reference():
-    pass #(...)

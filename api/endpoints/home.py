@@ -4,7 +4,6 @@ from api.app import api
 def home():
     return {
         "success": True,
-        "reference_path": "/reference",
         "endpoints": {
             "home": "/",
             "reference": "/reference",
@@ -32,7 +31,6 @@ def home():
             },
             "room": {
                 "room": "/room",
-                "channels": "/room/channels",
                 "create": "/room/create",
                 "delete": "/room/delete",
                 "update": "/room/update",
@@ -49,6 +47,3 @@ def home():
             }
         }
     }, 200
-
-def reference():
-    pass #(...)

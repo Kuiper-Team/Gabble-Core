@@ -16,12 +16,12 @@ def user():
         username = parameters["username"]
 
         if not controls.user_exists(username): return presets.nouser
-        access = controls.verify_hash(parameters, username, hash)
+        access = controls.verify_hash(username, hash)
     else:
         return presets.missingparameter
 
     try:
-        data = controls.fetch_from_db(parameters, "users", "username", username)
+        data = controls.fetch_from_db("users", "username", username)
     except Exception as code:
         return {
             "success": False,
@@ -58,6 +58,3 @@ def user():
                 }
             },
         }
-
-def reference():
-    pass #(...)

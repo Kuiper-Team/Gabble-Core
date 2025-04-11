@@ -119,27 +119,31 @@ def members(uuid, private_key):
     else:
         return members.split(",")
 
-def add_member(new_member, uuid, public_key, private_key):
+def add_member(new_member, uuid, private_key):
     try:
-        members = json.loads(generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key))
+        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
+        if new_member in members.split(","): raise Exception("alreadyamember")
+
         try:
-            cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(json.loads(members.update({new_member: generation.unix_timestamp(datetime.now())}))), public_key), uuid))
+            cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(json.loads(members.update({new_member: generation.unix_timestamp(datetime.now())}))), public_key(uuid)), uuid))
         except sqlite3.OperationalError:
             raise Exception("noroom")
         else:
             connection.commit()
 
-def kick_member(member, uuid, public_key, private_key): #Eğer öyle bir üye listede yoksa API erkenden hata mesajı göndermeli.
+def kick_member(member, uuid, private_key):
     try:
-        members = json.loads(generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key))
+        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
+        if not member in members.split(","): raise Exception("nomember")
+
         try:
-            cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(json.loads(members.pop(member))), public_key), uuid))
+            cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(json.loads(members.pop(member))), public_key(uuid)), uuid))
         except sqlite3.OperationalError:
             raise Exception("noroom")
         else:

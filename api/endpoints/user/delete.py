@@ -14,7 +14,7 @@ def user_delete():
         username = parameters["username"]
 
         if not controls.user_exists(username): return presets.nouser
-        if not controls.verify_hash(parameters, username, hash): return presets.incorrecthash
+        if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
     else:
         return presets.missingparameter
 
@@ -25,6 +25,5 @@ def user_delete():
                 "success": False,
                 "error": code
             }, presets.status_codes[code]
-
-def reference():
-    pass #(...)
+    else:
+        return presets.success, 200

@@ -1,14 +1,22 @@
 alreadyamember = {
     "success": False,
-    "error": "alreadyamember",
+    "error": "alreadyamember"
 }, 401
 channelexists = {
     "success": False,
     "error": "channelexists"
 }, 406
+conversationexists = {
+    "success": False,
+    "error": "conversationexists"
+}, 406
 incorrecthash = {
     "success": False,
     "error": "incorrecthash"
+}, 401
+incorrectprivatekey = {
+    "success": False,
+    "error": "incorrectprivatekey"
 }, 401
 invalidexpiry = {
     "success": False,
@@ -26,6 +34,14 @@ nochannel = {
     "success": False,
     "error": "nochannel"
 }, 406
+noconversations = {
+    "success": False,
+    "error": "noconversations"
+}, 406
+nomember = {
+    "success": False,
+    "error": "nomember"
+}
 nomessage = {
     "success": False,
     "error": "nomessage"
@@ -44,7 +60,7 @@ nouser = {
 }, 406
 roomexists = {
     "success": False,
-    "error": "roomexists",
+    "error": "roomexists"
 }, 406
 userexists = {
     "success": False,
@@ -58,11 +74,14 @@ success = { #Use along with a status code, either 200 or 201.
 status_codes = {
     "alreadyamember": 401,
     "channelexists": 406,
+    "conversationexists": 406,
     "incorrecthash": 401,
+    "incorrectprivatekey": 401,
     "invalidexpiry": 406,
     "invalidformat": 406,
     "missingparameter": 406,
     "nochannel": 406,
+    "noconversation": 406,
     "nomessage": 406,
     "noroom": 406,
     "nopermission": 403,

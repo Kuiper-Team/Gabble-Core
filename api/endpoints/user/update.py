@@ -15,7 +15,7 @@ def user_update():
         username = parameters["username"]
         hash = parameters["hash"]
 
-        if not controls.verify_hash(parameters, username, hash): return presets.incorrecthash
+        if not controls.verify_hash(username, hash): return presets.incorrecthash
     else:
         return presets.missingparameter
 
@@ -36,6 +36,3 @@ def user_update():
             }, presets.status_codes[code]
 
     return presets.success, 201
-
-def reference():
-    pass #(...)
