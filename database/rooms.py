@@ -16,7 +16,7 @@ public_key TEXT NOT NULL,
 channels TEXT,
 members TEXT NOT NULL,
 settings TEXT NOT NULL,
-permissions TEXT NOT NULL,
+permissions TEXT NOT NULL
 PRIMARY KEY (uuid))
 """)
 
@@ -36,16 +36,15 @@ default_permissions = json.dumps(
 def create(title, username):
     key_pair = generation.rsa_generate_pair()
     public_key = key_pair[0]
-    administrator_hash = generation.random_sha256_hash()
     uuid = uuid_v7().hex
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), None, generation.aes_encrypt(default_permissions, administrator_hash)))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), generation.rsa_encrypt(default_settings, public_key), generation.rsa_encrypt(default_permissions, public_key)))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:
         connection.commit()
 
-        return public_key, key_pair[1], administrator_hash, uuid
+        return public_key, key_pair[1], uuid
 
 def delete(uuid):
     try:
@@ -55,7 +54,7 @@ def delete(uuid):
     else:
         connection.commit()
 
-def update(uuid, settings):
+def update(uuid, settings=None, permissions=None):
     if settings:
         try:
             cursor.execute("UPDATE rooms SET settings = ? WHERE uuid = ?", (settings, uuid))
@@ -63,10 +62,17 @@ def update(uuid, settings):
             raise Exception("noroom")
         else:
             connection.commit()
+    if permissions:
+        try:
+            cursor.execute("UPDATE rooms SET permissions = ? WHERE uuid = ?", (permissions, uuid))
+        except sqlite3.OperationalError:
+            raise Exception("noroom")
+        else:
+            connection.commit()
 
-def has_permissions(uuid, username, requested, administrator_hash):
+def has_permissions(uuid, username, requested, private_key):
     try:
-        permissions = json.loads(generation.aes_decrypt(cursor.execute("SELECT permissions FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash))
+        permissions = json.loads(generation.rsa_decrypt(cursor.execute("SELECT permissions FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key))
     except sqlite3.OperationalError:
         return False
     else:
@@ -75,33 +81,6 @@ def has_permissions(uuid, username, requested, administrator_hash):
             result.append(permissions["members"][username][permission])
 
         return result
-
-#Permissions will be decided later.
-def update_permissions_tag(uuid, administrator_hash, title, color=None,
-    view_channels=None
-): #Both for creation and updating...
-    try:
-        current_permissions = generation.aes_decrypt(cursor.execute("SELECT permissions FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash)
-    except sqlite3.OperationalError:
-        raise Exception("noroom")
-    else:
-        modified_permissions = current_permissions
-        modified_permissions["tag"][title] = {}
-        modified_permissions["tag"][title]["color"] = color
-        modified_permissions["tag"][title]["permissions"] = {}
-
-        if view_channels: modified_permissions["tag"][title]["permissions"]["view_channels"] = view_channels
-        try:
-            cursor.execute("UPDATE rooms SET permissions = ? WHERE uuid = ?", (generation.aes_encrypt(modified_permissions, administrator_hash), uuid))
-        except sqlite3.OperationalError:
-            raise Exception("noroom")
-        else:
-            connection.commit()
-
-def update_permissions_member(uuid, administrator_hash, color=None,
-    view_channels=None
-): #Both for creation and updating...
-    pass #(...)
 
 def channels(uuid, private_key):
     try:
@@ -151,8 +130,8 @@ def kick_member(member, uuid, private_key):
 
 def public_key(uuid):
     try:
-        public_key = cursor.execute("SELECT public_key FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0]
+        key = cursor.execute("SELECT public_key FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0]
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
-        return public_key
+        return key

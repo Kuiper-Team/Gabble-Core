@@ -34,15 +34,12 @@ def fetch_from_db(table, where, value):
     else:
         return data
 
-def has_permissions(username, uuid, permissions, administrator_hash):
-    return rooms.has_permissions(uuid, username, permissions, administrator_hash)
-
 def user_exists(username):
     return users.exists(username)
 
 def verify_administrator_hash(uuid, administrator_hash):
     try:
-        settings = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)), administrator_hash))
+        fetched = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)), administrator_hash))
     except Exception:
         return False
     else:

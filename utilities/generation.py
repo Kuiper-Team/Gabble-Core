@@ -51,6 +51,3 @@ def rsa_decrypt(ciphertext, private_key):
     decrypted_text = rsa_private_key.decrypt(ciphertext)
 
     return decrypted_text
-
-def random_sha256_hash():
-    return SHA256.new(Random.get_random_bytes(64)).hexdigest()

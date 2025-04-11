@@ -3,7 +3,6 @@ from flask import request
 import api.controls as controls
 import api.presets as presets
 import database.rooms as rooms
-import utilities.validation as validation
 from api.app import api
 
 @api.route("/room/create", methods=["GET", "POST"])
@@ -14,9 +13,8 @@ def room_create():
     if controls.check_parameters(parameters, ("title", "username", "hash")):
         title = parameters["title"]
         username = parameters["username"]
-        hash = parameters["hash"]
 
-        if not validation.verify_hash(username, hash): return presets.incorrecthash
+        if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
         if controls.fetch_from_db("rooms", "username", username): return presets.roomexists
     else:
         return presets.missingparameter
@@ -28,7 +26,7 @@ def room_create():
     ): return presets.invalidformat
 
     try:
-        public_key, private_key, administrator_hash, uuid = rooms.create(title, username)
+        public_key, private_key, uuid = rooms.create(title, username)
     except Exception as code:
         return {
             "success": False,
@@ -42,6 +40,5 @@ def room_create():
                 "title": title,
                 "public_key": public_key,
                 "private_key": private_key,
-                "administrator_hash": administrator_hash
             }
         }, 201

@@ -12,11 +12,12 @@ from api.presets import missingparameter
 def room():
     parameters = request.args if request.method == "GET" else request.form
 
-    if controls.check_parameters(parameters, ("uuid", "username", "private_key")):
+    if controls.check_parameters(parameters, ("uuid", "username", "hash", "private_key")):
         uuid = parameters["uuid"]
         username = parameters["username"]
         private_key = parameters["private_key"]
 
+        if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
         if not controls.access_to_room(username, uuid, private_key): return presets.nopermission
 
         administrator_hash = None

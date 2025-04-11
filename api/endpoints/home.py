@@ -34,7 +34,6 @@ def home():
                 "create": "/room/create",
                 "delete": "/room/delete",
                 "update": "/room/update",
-                "update_permissions": "/room/update_permissions",
 
                 "member": "/member",
                 "kick": "/member/kick"
