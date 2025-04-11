@@ -12,9 +12,9 @@ from database.connection import connection, cursor
 cursor.execute("""CREATE TABLE IF NOT EXISTS users (
 username TEXT NOT NULL,
 display_name TEXT,
-settings TEXT,
-room_settings TEXT,
-channel_settings TEXT,
+settings TEXT NOT NULL,
+room_settings TEXT NOT NULL,
+channel_settings TEXT NOT NULL,
 friends TEXT,
 biography TEXT,
 request_hash TEXT NOT NULL,
@@ -23,11 +23,29 @@ key_chain TEXT NOT NULL,
 PRIMARY KEY (username))
 """)
 
+default_settings = json.dump(
+    {
+        "icon": 0
+    }
+)
+
+default_room_settings = json.dumps(
+    {
+
+    }
+)
+
+default_channel_settings = json.dumps(
+    {
+
+    }
+)
+
 def create(username, password):
     salt = get_random_bytes(16)
     hash = generation.hashed_password(password, salt)
     try:
-        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, None, None, None, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, None, default_settings, default_room_settings, default_channel_settings, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:

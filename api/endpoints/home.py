@@ -32,9 +32,9 @@ def home():
             },
             "room": {
                 "room": "/room",
+                "channels": "/room/channels",
                 "create": "/room/create",
                 "delete": "/room/delete",
-                "join": "/room/join",
                 "update": "/room/update",
                 "update_permissions": "/room/update_permissions",
 

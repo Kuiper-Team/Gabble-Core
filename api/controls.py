@@ -33,9 +33,9 @@ def check_parameters(parameters, requested):
 
     return True
 
-def fetch_from_db(parameters, table, where, value_parameter):
+def fetch_from_db(parameters, table, where, value):
     try:
-        data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, parameters[value_parameter])).fetchone()[0]
+        data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, value)).fetchone()[0]
     except sqlite3.OperationalError:
         return None
     else:

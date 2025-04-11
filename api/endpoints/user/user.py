@@ -11,8 +11,6 @@ from api.app import api
 def user():
     parameters = request.args if request.method == "GET" else request.form
 
-    data = controls.fetch_from_db(parameters, "users", "username", "username")
-
     if controls.check_parameters(parameters, ("username", "hash")):
         hash = parameters["hash"]
         username = parameters["username"]
@@ -21,6 +19,14 @@ def user():
         access = controls.verify_hash(parameters, username, hash)
     else:
         return presets.missingparameter
+
+    try:
+        data = controls.fetch_from_db(parameters, "users", "username", username)
+    except Exception as code:
+        return {
+            "success": False,
+            "error": code
+        }, presets.status_codes[code]
 
     if access:
         return {

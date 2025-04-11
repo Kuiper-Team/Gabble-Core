@@ -16,7 +16,7 @@ def room_create():
         hash = parameters["hash"]
 
         if not controls.verify_hash(parameters, username, hash): return presets.incorrecthash
-        if controls.fetch_from_db(parameters, "rooms", "username", "username"): return presets.roomexists
+        if controls.fetch_from_db(parameters, "rooms", "username", username): return presets.roomexists
     else:
         return presets.missingparameter
 

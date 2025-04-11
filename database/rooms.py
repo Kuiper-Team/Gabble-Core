@@ -15,24 +15,16 @@ uuid TEXT NOT NULL,
 public_key TEXT NOT NULL,
 channels TEXT,
 members TEXT NOT NULL,
-settings TEXT,
+settings TEXT NOT NULL,
 permissions TEXT NOT NULL,
-administrator_hash TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """)
-#"permissions_map" formatı:
-#   "tags": {
-#       "Şah": {
-#       "color": "17CA4D",
-#       "permissions": { (yetki haritası...) }
-#   }
-#}
-#   "members": {
-#       "Faysal": {
-#          "color": "17CA4D",
-#          "permissions": { (yetki haritası...) }
-#      }
-#   }
+
+default_settings = json.dumps(
+    {
+        "icon": 0
+    }
+)
 
 default_permissions = json.dumps(
     {
@@ -47,7 +39,7 @@ def create(title, username):
     administrator_hash = generation.random_sha256_hash()
     uuid = uuid_v7().hex
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), None, generation.aes_encrypt(default_permissions, administrator_hash), administrator_hash))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), None, generation.aes_encrypt(default_permissions, administrator_hash)))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:
@@ -63,7 +55,7 @@ def delete(uuid):
     else:
         connection.commit()
 
-def update(uuid, settings=None):
+def update(uuid, settings):
     if settings:
         try:
             cursor.execute("UPDATE rooms SET settings = ? WHERE uuid = ?", (settings, uuid))
@@ -110,6 +102,14 @@ def update_permissions_member(uuid, administrator_hash, color=None,
     view_channels=None
 ): #Both for creation and updating...
     pass #(...)
+
+def channels(uuid, private_key):
+    try:
+        channels = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
+    except sqlite3.OperationalError:
+        raise Exception("noroom")
+    else:
+        return channels.split(",") if channels is not None else []
 
 def members(uuid, private_key):
     try:
