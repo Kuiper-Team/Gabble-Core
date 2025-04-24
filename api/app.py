@@ -10,7 +10,7 @@ from endpoints.channel import channel, create
 from endpoints.conversation import conversation, create, delete
 from endpoints.message import message, create, delete, edit
 from endpoints.request import request, accept, decline, withdraw
-from endpoints.room import room, create, delete, join, update
+from endpoints.room import room, create, delete, update
 from endpoints.user import user, create, delete, update
 
 @api.errorhandler(400)

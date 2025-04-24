@@ -23,11 +23,12 @@ def home():
                 "delete": "/message/delete",
                 "edit": "/message/edit"
             },
-            "request": {
-                "request": "/request",
-                "accept": "/request/accept",
-                "decline": "/request/decline",
-                "withdraw": "/request/withdraw"
+            "invite": {
+                "invite": "/invite",
+                "accept": "/invite/accept",
+                "create": "/invite/create",
+                "decline": "/invite/decline",
+                "withdraw": "/invite/withdraw"
             },
             "room": {
                 "room": "/room",
