@@ -16,9 +16,9 @@ public_key TEXT NOT NULL,
 channels TEXT,
 members TEXT NOT NULL,
 settings TEXT NOT NULL,
-permissions TEXT NOT NULL
-PRIMARY KEY (uuid))
-""")
+permissions TEXT NOT NULL,
+PRIMARY KEY (uuid)
+)""")
 
 default_settings = json.dumps(
     {

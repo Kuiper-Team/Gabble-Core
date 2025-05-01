@@ -22,7 +22,7 @@ def room_create():
     if not (
         1 <= len(title) <= 36 and
         title.isascii() and
-        all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in title)
+        all(character in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\\()[]{}=" for character in password)
     ): return presets.invalidformat
 
     try:

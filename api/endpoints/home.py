@@ -1,3 +1,8 @@
+#May not be up-to-date due to the continuation of our efforts.
+import sys
+
+sys.path.append("..")
+
 from api.app import api
 
 @api.route("/", methods=["GET", "POST"])

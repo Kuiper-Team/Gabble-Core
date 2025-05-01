@@ -4,8 +4,6 @@ import sys
 from Crypto.Random import get_random_bytes
 from hashlib import sha256
 
-from Crypto.SelfTest.Protocol.test_ecdh import private_key
-
 sys.path.append("..")
 
 import database.conversations as conversations
@@ -27,7 +25,7 @@ key_chain TEXT NOT NULL,
 PRIMARY KEY (username))
 """)
 
-default_settings = json.dump(
+default_settings = json.dumps(
     {
         "icon": 0
     }

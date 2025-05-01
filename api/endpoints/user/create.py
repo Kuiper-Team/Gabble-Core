@@ -18,13 +18,14 @@ def user_create():
     else:
         return presets.missingparameter
 
+    allowed_characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\\()[]{}="
     if not (
         3 <= len(username) <= 36 and
         18 <= len(password) <= 45 and
         username.isascii() and
         password.isascii() and
-        all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in username) and
-        all(character not in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.;-_!?'\"#%&/\()[]{}=" for character in password)
+        all(character in allowed_characters for character in username) and
+        all(character in allowed_characters for character in password)
     ): return presets.invalidformat
 
     try:
