@@ -1,11 +1,9 @@
-#Format validation function should be coded inside utilities/validation.py!
 import json
 import sqlite3
 
 import database.rooms as rooms
 import database.users as users
 import utilities.generation as generation
-import utilities.validation as validation
 from database.connection import cursor
 
 def access_to_channel(username, uuid, private_key):
@@ -28,7 +26,7 @@ def check_parameters(parameters, requested):
 
 def fetch_from_db(table, where, value, column="*"):
     try:
-        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()[0]
+        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()
     except sqlite3.OperationalError:
         return None
     else:
@@ -47,7 +45,7 @@ def user_exists(username):
 
 def verify_administrator_hash(uuid, administrator_hash):
     try:
-        fetched = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)), administrator_hash))
+        fetched = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash))
     except Exception:
         return False
     else:
@@ -55,13 +53,21 @@ def verify_administrator_hash(uuid, administrator_hash):
 
 def verify_hash(username, hash):
     try:
-        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username)).fetchone()[0], hash))
+        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username,)).fetchone()[0], hash))
     except Exception:
         return False
 
+def verify_passcode(uuid, passcode):
+    try:
+        result = generation.aes_decrypt(cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0], passcode)
+    except Exception:
+        return False
+    else:
+        return result.isascii() and len(result) == 3
+
 def verify_private_key(uuid, private_key):
     try:
-        title = generation.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)), private_key)
+        title = generation.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
     except Exception:
         return False
     else:

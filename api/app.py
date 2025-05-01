@@ -1,6 +1,15 @@
 #I might implement CORS, rate limit and JWT too.
+#And I can also switch the whole core to more professional frameworks and database management systems.
 #For CORS, see http://medium.com/@mterrano1/cors-in-a-flask-api-38051388f8cc
+#The REST API must have a SQL injection attack prevention system.
+import utilities.log as log
 from flask import Flask, json
+from os import environ
+
+if not environ.get("GABBLE_DATABASE"):
+    log.failure("The environment variable \"GABBLE_DATABASE\" should be set.")
+
+    exit(1)
 
 api = Flask(__name__)
 json.provider.DefaultJSONProvider.sort_keys = False

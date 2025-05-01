@@ -1,4 +1,4 @@
-#Don't forget to append the notice to the target user's inbox.
+#Don't forget to forward the notification to the target user's inbox if the invite is a friend request.
 from datetime import datetime
 from flask import request
 
@@ -21,7 +21,7 @@ def invite_create():
         username = parameters["username"]
 
         f = type == "f"
-        i = type == "i"
+        i = type == "r"
         if f:
             if not controls.check_parameters(parameters, ("target")): return presets.missingparameter
         elif i:
@@ -36,6 +36,7 @@ def invite_create():
         ): return presets.invalidexpiry
 
         if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
+        if not controls.verify_passcode(parameters["uuid"], passcode): return presets.incorrectpasscode
     else:
         return presets.missingparameter
 

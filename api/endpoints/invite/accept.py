@@ -22,6 +22,7 @@ def invite_accept():
         result = controls.fetch_invite_result(uuid, passcode)
 
         if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
+        if not controls.verify_passcode(uuid, passcode): return presets.incorrectpasscode
         if not validation.timestamp(controls.fetch_from_db("invites", "uuid", uuid, column="expiry")): return presets.inviteexpired
 
         if result[0] == "f":

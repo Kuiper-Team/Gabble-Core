@@ -45,7 +45,7 @@ def user():
                     "key_chain": json.dumps(generation.aes_decrypt(data[9], hash))
                 }
             },
-        }
+        }, 200
     else:
         return {
             "success": True,
@@ -57,4 +57,4 @@ def user():
                     "request_hash": data[7]
                 }
             },
-        }
+        }, 200

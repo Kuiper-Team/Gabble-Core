@@ -18,6 +18,10 @@ incorrecthash = {
     "success": False,
     "error": "incorrecthash"
 }, 401
+incorrectpasscode = {
+    "success": False,
+    "error": "incorrectpasscode"
+}, 401
 incorrectprivatekey = {
     "success": False,
     "error": "incorrectprivatekey"
