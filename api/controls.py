@@ -26,13 +26,21 @@ def check_parameters(parameters, requested):
 
     return True
 
-def fetch_from_db(table, where, value):
+def fetch_from_db(table, where, value, column="*"):
     try:
-        data = cursor.execute("SELECT * FROM ? WHERE ? = ?", (table, where, value)).fetchone()[0]
+        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()[0]
     except sqlite3.OperationalError:
         return None
     else:
         return data
+
+def fetch_invite_result(uuid, passcode, list=True):
+    try:
+        result = cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        return None
+    else:
+        return result.split(",") if list else result
 
 def user_exists(username):
     return users.exists(username)

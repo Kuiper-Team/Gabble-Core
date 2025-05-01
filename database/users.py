@@ -83,13 +83,20 @@ def delete(username, hash):
         except Exception("noroom"): pass
         except Exception("noconversation"): pass
 
+def friends(username, hash, list=True):
+    try:
+        encrypted = cursor.execute("SELECT friends FROM users WHERE username = ?", (username,)).fetchone()[0]
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        decrypted = generation.aes_decrypt(encrypted, hash)
+
+        return decrypted.split(",") if list else decrypted
+
 def add_friends(username_1, username_2, hash_1, hash_2):
     try:
-        encrypted_1 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_1,)).fetchone()[0]
-        encrypted_2 = cursor.execute("SELECT friends FROM users WHERE username = ?", (username_2,)).fetchone()[0]
-
-        friends_1 = generation.aes_decrypt(encrypted_1, hash_1)
-        friends_2 = generation.aes_decrypt(encrypted_2, hash_2)
+        friends_1 = friends(username_1, hash_1)
+        friends_2 = friends(username_2, hash_2)
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:

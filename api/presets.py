@@ -2,6 +2,10 @@ alreadyamember = {
     "success": False,
     "error": "alreadyamember"
 }, 401
+alreadyfriends = {
+    "success": False,
+    "error": "alreadyfriends"
+}, 401
 channelexists = {
     "success": False,
     "error": "channelexists"
@@ -25,6 +29,10 @@ invalidexpiry = {
 invalidformat = {
     "success": False,
     "error": "invalidformat"
+}, 406
+inviteexpired = {
+    "success": False,
+    "error": "inviteexpired"
 }, 406
 missingparameter = {
     "success": False,
@@ -73,12 +81,14 @@ success = { #Use along with a status code, either 200 or 201.
 #Dictionary for Error Status Codes:
 status_codes = {
     "alreadyamember": 401,
+    "alreadyfriends": 401,
     "channelexists": 406,
     "conversationexists": 406,
     "incorrecthash": 401,
     "incorrectprivatekey": 401,
     "invalidexpiry": 406,
     "invalidformat": 406,
+    "inviteexpired": 406,
     "missingparameter": 406,
     "nochannel": 406,
     "noconversation": 406,

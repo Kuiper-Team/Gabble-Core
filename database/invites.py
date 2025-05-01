@@ -44,7 +44,7 @@ def withdraw(uuid):
 
 #Options for "type":
 #f: Friend request
-#i: Room invite
+#r: Room invite
 def accept(uuid, passcode, room_private_key=None):
     try:
         inviter = cursor.execute("SELECT inviter FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0]
@@ -54,9 +54,9 @@ def accept(uuid, passcode, room_private_key=None):
     else:
         if result[0] == "f": #f,username1,username2
             users.add_friends(result[1], result[2])
-        elif result[0] == "i" and room_private_key: #i,uuid,username
+        elif result[0] == "r" and room_private_key: #i,uuid,username
             rooms.add_member(result[2], result[1], room_private_key)
         else:
-            raise Exception("invalidinvite")
+            raise Exception("invalidformat")
 
         withdraw(uuid)

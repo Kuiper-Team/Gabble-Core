@@ -1,3 +1,4 @@
+#Don't forget to append the notice to the target user's inbox.
 from datetime import datetime
 from flask import request
 
@@ -31,7 +32,7 @@ def invite_create():
         now = generation.unix_timestamp(datetime.now())
         if not (
             validation.timestamp(expiry) and
-             now < expiry < now + 31556926
+             now + 60 <= expiry <= now + 31556926
         ): return presets.invalidexpiry
 
         if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
