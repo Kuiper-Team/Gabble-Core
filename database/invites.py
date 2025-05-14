@@ -54,7 +54,7 @@ def accept(uuid, passcode, room_private_key=None):
     else:
         if result[0] == "f": #f,username1,username2
             users.add_friends(result[1], result[2])
-        elif result[0] == "r" and room_private_key: #i,uuid,username
+        elif result[0] == "r" and room_private_key: #r,uuid,username
             rooms.add_member(result[2], result[1], room_private_key)
         else:
             raise Exception("invalidformat")

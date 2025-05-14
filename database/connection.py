@@ -1,19 +1,21 @@
-#The database file will always be saved to the same path.
+#A .env file containing the path to the database, labelled GABBLE_DATABASE_PATH, must be created in this directory.
 import sqlite3
 import sys
-from os import environ
+from dotenv import load_dotenv
+from os import getenv
 
 sys.path.append("..")
 
 import utilities.log as log
 
-path = environ.get("GABBLE_DATABASE")
+load_dotenv()
+
 try:
-    connection = sqlite3.connect(path, check_same_thread=False)
-except sqlite3.OperationalError:
-    log.failure("Veri tabanına bağlanılamadı.")
+    connection = sqlite3.connect(getenv("GABBLE_DATABASE_PATH"), check_same_thread=False)
+except Exception:
+    log.failure("Couldn't connect to the database.")
     exit(1)
 else:
-    log.success("Veri tabanına bağlanıldı.")
+    log.success("Connected to the database.")
 
 cursor = connection.cursor()

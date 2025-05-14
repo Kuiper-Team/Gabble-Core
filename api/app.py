@@ -4,7 +4,6 @@
 #The REST API must have a SQL injection attack prevention system.
 import sys
 from flask import Flask, json
-from os import environ
 
 api = Flask(__name__)
 json.provider.DefaultJSONProvider.sort_keys = False
@@ -20,11 +19,6 @@ from endpoints.user import user, create, delete, update
 sys.path.append("..")
 
 import utilities.log as log
-
-if not environ.get("GABBLE_DATABASE"):
-    log.failure("The environment variable \"GABBLE_DATABASE\" should be set.")
-
-    exit(1)
 
 @api.errorhandler(400)
 def error_400(error):
