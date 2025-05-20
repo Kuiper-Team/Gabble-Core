@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+from datetime import datetime
 
 sys.path.append("..")
 
@@ -12,13 +13,14 @@ message TEXT NOT NULL,
 uuid TEXT NOT NULL,
 room_uuid TEXT,
 channel_uuid TEXT NOT NULL,
+timestamp TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """
 )
 
 def create(message, room_uuid, channel_uuid, public_key):
     try:
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid_v7().hex, room_uuid, channel_uuid))
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid_v7().hex, room_uuid, channel_uuid, generation.unix_timestamp(datetime.now())))
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:
