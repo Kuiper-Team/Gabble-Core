@@ -34,7 +34,7 @@ def message():
             "uuid": uuid,
             "room_uuid": data[2],
             "channel_uuid": data[3],
-            "timestamp": data[4],
+            "timestamp": generation.rsa_decrypt(data[4], private_key),
             "body": generation.rsa_decrypt(data[0], private_key)
         },
     }, 200
