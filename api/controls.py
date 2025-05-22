@@ -6,7 +6,7 @@ import database.users as users
 import utilities.generation as generation
 from database.connection import cursor
 
-def access_to_channel(username, uuid, private_key):
+def access_to_channel(username, uuid, private_key): #Encompasses conversations.
     pass
 
 def access_to_room(username, uuid, private_key):

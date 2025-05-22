@@ -15,12 +15,14 @@ def home():
             "channel": {
                 "channel": "/channel",
                 "create": "/channel/create",
-                "update_permissions": "/room/update_permissions"
+                "messages": "/channel/messages",
+                "update_permissions": "/channel/update_permissions"
             },
             "conversation": {
                 "conversation": "/conversation",
                 "create": "/conversation/create",
-                "delete": "/conversation/delete"
+                "delete": "/conversation/delete",
+                "messages": "/conversation/messages"
             },
             "message": {
                 "message": "/message",

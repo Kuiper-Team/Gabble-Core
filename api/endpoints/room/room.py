@@ -21,7 +21,7 @@ def room():
     else:
         return presets.missingparameter
 
-    access = rooms.has_permissions(uuid, username, ("access_to_settings", "access_to_permissions"))
+    access = rooms.has_permissions(uuid, username, ("access_to_settings", "access_to_permissions"), private_key)
     try:
         data = controls.fetch_from_db("rooms", "uuid", uuid)
     except Exception as code:
