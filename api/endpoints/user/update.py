@@ -4,7 +4,7 @@ import api.controls as controls
 import api.presets as presets
 import database.users as users
 import utilities.generation as generation
-from api.app import api
+from app import api
 
 
 @api.route("/user/update", methods=["GET", "POST"])

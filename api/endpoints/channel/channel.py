@@ -3,7 +3,7 @@ from flask import request
 
 import api.controls as controls
 import api.presets as presets
-from api.app import api
+from app import api
 from database.connection import cursor
 
 @api.route("/channel", methods=["GET", "POST"])

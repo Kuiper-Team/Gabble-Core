@@ -4,7 +4,7 @@ import api.controls as controls
 import api.presets as presets
 import database.rooms as rooms
 import utilities.generation as generation
-from api.app import api
+from app import api
 
 @api.route("/room/update", methods=["GET", "POST"])
 @api.route("/room/update/", methods=["GET", "POST"])

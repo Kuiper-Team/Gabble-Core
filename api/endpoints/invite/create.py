@@ -7,7 +7,7 @@ import api.presets as presets
 import database.invites as invites
 import utilities.generation as generation
 import utilities.validation as validation
-from api.app import api
+from app import api
 
 @api.route("/invite/create", methods=["GET", "POST"])
 @api.route("/invite/create/", methods=["GET", "POST"])

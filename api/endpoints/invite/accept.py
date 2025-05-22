@@ -5,7 +5,7 @@ import api.presets as presets
 import database.invites as invites
 import database.users as users
 import utilities.validation as validation
-from api.app import api
+from app import api
 
 
 @api.route("/invite/accept", methods=["GET", "POST"])

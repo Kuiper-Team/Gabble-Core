@@ -3,7 +3,7 @@ import sys
 
 sys.path.append("..")
 
-from api.app import api
+from app import api
 
 @api.route("/", methods=["GET", "POST"])
 def home():

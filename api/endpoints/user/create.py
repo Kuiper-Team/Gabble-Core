@@ -3,7 +3,7 @@ from flask import request
 import api.controls as controls
 import api.presets as presets
 import database.users as users
-from api.app import api
+from app import api
 
 @api.route("/user/create", methods=["GET", "POST"])
 @api.route("/user/create/", methods=["GET", "POST"])
