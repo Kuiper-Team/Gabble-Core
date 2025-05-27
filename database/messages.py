@@ -20,11 +20,15 @@ PRIMARY KEY (uuid))
 
 def create(message, room_uuid, channel_uuid, public_key):
     try:
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid_v7().hex, room_uuid, channel_uuid, generation.rsa_encrypt(generation.unix_timestamp(datetime.now())), public_key))
+        uuid = uuid_v7().hex
+        timestamp = generation.unix_timestamp(datetime.now())
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid, room_uuid, channel_uuid, generation.rsa_encrypt(timestamp, public_key)), public_key)
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:
         connection.commit()
+
+    return uuid, timestamp
 
 def delete(uuid, room_uuid, channel_uuid):
     try:
