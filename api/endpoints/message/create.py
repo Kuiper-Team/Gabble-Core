@@ -11,7 +11,7 @@ from app import api
 def message_create():
     parameters = request.args if request.method == "GET" else request.form
 
-    if controls.check_parameters(parameters, "message", "room_uuid", "channel_uuid", "username", "hash", "public_key", "private_key"):
+    if controls.check_parameters(parameters, ("message", "room_uuid", "channel_uuid", "username", "hash", "public_key", "private_key")):
         username = parameters["username"]
         private_key = parameters["private_key"]
         room_uuid = parameters["room_uuid"]
