@@ -43,14 +43,6 @@ def fetch_invite_result(uuid, passcode, list=True):
 def user_exists(username):
     return users.exists(username)
 
-def verify_administrator_hash(uuid, administrator_hash):
-    try:
-        fetched = json.loads(generation.aes_decrypt(cursor.execute("SELECT settings FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], administrator_hash))
-    except Exception:
-        return False
-    else:
-        return True
-
 def verify_hash(username, hash):
     try:
         json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username,)).fetchone()[0], hash))

@@ -4,6 +4,7 @@ from datetime import datetime
 
 sys.path.append("..")
 
+import database.channels as channels
 import utilities.generation as generation
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
@@ -18,11 +19,11 @@ PRIMARY KEY (uuid))
 """
 )
 
-def create(message, room_uuid, channel_uuid, public_key):
+def create(message, channel_uuid, public_key):
     try:
         uuid = uuid_v7().hex
         timestamp = generation.unix_timestamp(datetime.now())
-        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid, room_uuid, channel_uuid, generation.rsa_encrypt(timestamp, public_key)), public_key)
+        cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?)", (generation.rsa_encrypt(message, public_key), uuid, channels.room_of(channel_uuid), channel_uuid, generation.rsa_encrypt(timestamp, public_key)), public_key)
     except sqlite3.OperationalError:
         raise Exception("couldntinsert")
     else:
@@ -30,17 +31,17 @@ def create(message, room_uuid, channel_uuid, public_key):
 
     return uuid, timestamp
 
-def delete(uuid, room_uuid, channel_uuid):
+def delete(uuid, channel_uuid):
     try:
-        cursor.execute("DELETE FROM messages WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (uuid, room_uuid, channel_uuid))
+        cursor.execute("DELETE FROM messages WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (uuid, channels.room_of(channel_uuid), channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("nomessage")
     else:
         connection.commit()
 
-def edit(new_message, uuid, room_uuid, channel_uuid):
+def edit(new_message, uuid, channel_uuid):
     try:
-        cursor.execute("UPDATE messages SET new_message = ? WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (generation.aes_encrypt(new_message, hash), uuid, room_uuid, channel_uuid))
+        cursor.execute("UPDATE messages SET new_message = ? WHERE uuid = ? AND room_uuid = ? AND channel_uuid = ?", (generation.aes_encrypt(new_message, hash), uuid, channels.room_of(channel_uuid), channel_uuid))
     except sqlite3.OperationalError:
         raise Exception("nomessage")
     else:

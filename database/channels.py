@@ -64,3 +64,9 @@ def update(uuid, settings=None, permissions_map=None):
             raise Exception("nouser")
         else:
             connection.commit()
+
+def room_of(uuid):
+    try:
+        cursor.execute("SELECT room_uuid FROM channels WHERE uuid = ?", (uuid,))
+    except sqlite3.OperationalError:
+        raise Exception("nochannel")

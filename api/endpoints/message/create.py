@@ -11,14 +11,13 @@ from app import api
 def message_create():
     parameters = request.args if request.method == "GET" else request.form
 
-    if controls.check_parameters(parameters, ("message", "room_uuid", "channel_uuid", "username", "hash", "public_key", "private_key")):
+    if controls.check_parameters(parameters, ("message", "channel_uuid", "username", "hash", "public_key", "private_key")):
         username = parameters["username"]
         private_key = parameters["private_key"]
-        room_uuid = parameters["room_uuid"]
         channel_uuid = parameters["channel_uuid"]
 
-        if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
         if not controls.access_to_channel(username, channel_uuid, private_key): return presets.nopermission
+        if not controls.verify_hash(username, parameters["hash"]): return presets.incorrecthash
     else:
         return presets.missingparameter
 
@@ -27,13 +26,10 @@ def message_create():
     except Exception:
         return presets.invalidformat
     length = len(message)
-    if (
-        length > 10000 or
-        length < 1
-    ): return presets.invalidformat
+    if 1 > length > 1000: return presets.invalidformat
 
     try:
-        data = messages.create(message, room_uuid, channel_uuid, parameters["public_key"])
+        data = messages.create(message, channel_uuid, parameters["public_key"])
     except Exception as code:
         return {
             "success": False,
