@@ -2,6 +2,7 @@ from flask import request
 
 import api.controls as controls
 import api.presets as presets
+import database.channels as channels
 import database.messages as messages
 import utilities.generation as generation
 from app import api
@@ -29,7 +30,7 @@ def message_create():
     if 1 > length > 1000: return presets.invalidformat
 
     try:
-        data = messages.create(message, channel_uuid, parameters["public_key"])
+        data = messages.create(message, username, channel_uuid, parameters["public_key"])
     except Exception as code:
         return {
             "success": False,
@@ -41,7 +42,7 @@ def message_create():
             "message": {
                 "message": message,
                 "uuid": data[0],
-                "room_uuid": room_uuid,
+                "room_uuid": channels.room_of(channel_uuid),
                 "channel_uuid": channel_uuid,
                 "timestamp": data[1]
             }

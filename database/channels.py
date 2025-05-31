@@ -67,6 +67,8 @@ def update(uuid, settings=None, permissions_map=None):
 
 def room_of(uuid):
     try:
-        cursor.execute("SELECT room_uuid FROM channels WHERE uuid = ?", (uuid,))
+        room_uuid = cursor.execute("SELECT room_uuid FROM channels WHERE uuid = ?", (uuid,))
     except sqlite3.OperationalError:
         raise Exception("nochannel")
+    else:
+        return room_uuid

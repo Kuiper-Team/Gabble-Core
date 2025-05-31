@@ -74,6 +74,10 @@ roomexists = {
     "success": False,
     "error": "roomexists"
 }, 406
+sameasprevious = {
+    "success": False,
+    "error": "sameasprevious",
+}, 406
 userexists = {
     "success": False,
     "error": "userexists"
@@ -101,5 +105,6 @@ status_codes = {
     "nopermission": 403,
     "nouser": 406,
     "roomexists": 406,
+    "sameasprevious": 406,
     "userexists": 406
 }

@@ -11,13 +11,13 @@ from app import api
 def room_update():
     parameters = request.args if request.method == "GET" else request.form
 
-    if controls.check_parameters(parameters, ("uuid", "username", "private_key")):
+    if controls.check_parameters(parameters, ("uuid", "username", "hash", "private_key")):
         uuid = parameters["uuid"]
         username = parameters["username"]
         private_key = parameters["private_key"]
 
         if not controls.verify_hash(parameters["username"], parameters["hash"]): return presets.incorrecthash
-        if not rooms.has_permissions(username, uuid, ("update_settings"), private_key): return presets.nopermission
+        if not rooms.has_permissions(username, uuid, ("update_settings",), private_key): return presets.nopermission
     else:
         return presets.missingparameter
 
@@ -40,5 +40,5 @@ def room_update():
             "success": False,
             "error": code
         }, presets.status_codes[code]
-
-    return presets.success, 201
+    else:
+        return presets.success, 201
