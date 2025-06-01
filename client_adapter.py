@@ -1,3 +1,4 @@
+#FastAPI has its own WebSocket decorators.
 import asyncio
 import os
 import websockets
@@ -22,7 +23,7 @@ async def serve():
 
 if check_port(host, port):
     try:
-        log.success("{} sunucusu, ws://{}:{} adresinde çalışıyor.".format(script_name, host, port))
+        log.success("The server {} is up on ws://{}:{}.".format(script_name, host, port))
         asyncio.run(serve())
     except KeyboardInterrupt:
         pass
@@ -30,5 +31,5 @@ if check_port(host, port):
         log.failure(str(error))
         exit(1)
 else:
-    log.failure("{} WebSocket sunucusunun portu {} müsait değil.".format(script_name, port))
+    log.failure("The port {} is busy for the websocket server {}.".format(port, script_name))
     exit(1)

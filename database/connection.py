@@ -13,7 +13,7 @@ load_dotenv()
 try:
     connection = sqlite3.connect(getenv("GABBLE_DATABASE_PATH"), check_same_thread=False)
 except Exception:
-    log.failure("Couldn't connect to the database.")
+    log.failure("Could not connect to the database.")
     exit(1)
 else:
     log.success("Connected to the database.")
