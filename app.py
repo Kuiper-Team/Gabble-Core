@@ -13,8 +13,10 @@ json.provider.DefaultJSONProvider.sort_keys = False
 try:
     imported = import_directory("api.endpoints", excluded_directory_names=("__pycache",), return_imported_scripts=True)
 except Exception:
-    log.failure("Could not ")
+    log.failure("Could not import all of the endpoints. Make sure that the directory structure and script names are proper.")
 else:
+    for script in imported:
+        log.success("Successfully imported {}.".format(script))
 
 
 @api.errorhandler(400)
