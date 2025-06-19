@@ -15,15 +15,6 @@ def access_to_room(username, uuid, private_key):
     else:
         return False
 
-def check_parameters(parameters, requested):
-    for parameter in requested:
-        try:
-            parameters[parameter]
-        except KeyError:
-            return False
-
-    return True
-
 def fetch_from_db(table, where, value, column="*"):
     try:
         data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()

@@ -1,6 +1,6 @@
-Flask~=3.1.0
 pycryptodome~=3.21.0
 pyargon2~=1.1.0
 python-dotenv~=1.1.0
 termcolor~=2.5.0
 websockets~=14.1
+fastapi~=0.115.13

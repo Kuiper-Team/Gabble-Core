@@ -1,55 +1,42 @@
-#I might implement CORS, rate limit and JWT too.
+#I might implement rate limit and JWT too.
 #And I can also switch the whole core to more professional frameworks and database management systems.
 #I must add a concise permission system.
-#For CORS, see http://medium.com/@mterrano1/cors-in-a-flask-api-38051388f8cc
 #The REST API must have a SQL injection attack prevention system.
-import utilities.log as log
-from flask import Flask, json
-from utilities.importer import import_directory
+import uvicorn
+from fastapi import FastAPI
 
-api = Flask(__name__)
-json.provider.DefaultJSONProvider.sort_keys = False
+api = FastAPI(
+    title="Gabble",
+    docs_url=None,
+    openapi_url=None,
+    redoc_url=None,
+    responses={
+        400: {
+            "success": False,
+            "error": "badrequest"
+        },
+        404: {
+            "success": False,
+            "error": "notfound"
+        },
+        405: {
+            "success": False,
+            "error": "methodnotallowed"
+        },
+        415: {
+            "success": False,
+            "error": "unsupportedmediatype"
+        },
+        500: {
+            "success": False,
+            "error": "internalservererror"
+        }
+    }
+)
 
-try:
-    imported = import_directory("api.endpoints", excluded_directory_names=("__pycache",), return_imported_scripts=True)
-except Exception:
-    log.failure("Could not import all of the endpoints. Make sure that the directory structure and script names are proper.")
-else:
-    for script in imported:
-        log.success("Successfully imported {}.".format(script))
+from api.endpoints import users
 
+api.include_router(users.router)
 
-@api.errorhandler(400)
-def error_400(error):
-    return {
-        "success": False,
-        "error": "badrequest"
-    }, 400
-
-@api.errorhandler(404)
-def error_404(error):
-    return {
-        "success": False,
-        "error": "notfound"
-    }, 404
-
-@api.errorhandler(405)
-def error_405(error):
-    return {
-        "success": False,
-        "error": "methodnotallowed"
-    }, 405
-
-@api.errorhandler(415)
-def error_416(error):
-    return {
-        "success": False,
-        "error": "unsupportedmediatype"
-    }, 415
-
-@api.errorhandler(500)
-def error_500(error):
-    return {
-        "success": False,
-        "error": "internalservererror"
-    }, 500
+if __name__ == "__main__":
+    uvicorn.run(api, host="0.0.0.0", port=443)
