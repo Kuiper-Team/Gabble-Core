@@ -1,14 +1,17 @@
 from pydantic import BaseModel, Field
 
-username = Field(min_length=3, max_length=36)
+label = Field(min_length=3, max_length=36)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
+uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
+public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 
 class BasicCredentials(BaseModel):
-    username: str = username
+    username: str = label
     password: str = Field(min_length=10, max_length=48, pattern=r"^[\x00-\x7F]*$")
 
 class HashCredentials(BaseModel):
-    username: str = username
+    username: str = label
     hash: str = hash
 
 class UserUpdate(BaseModel):
@@ -17,3 +20,22 @@ class UserUpdate(BaseModel):
     channel_settings: str = None
     settings: str = None
     room_settings: str = None
+
+class Room(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+
+class TitleRoom(BaseModel):
+    hash_credentials: HashCredentials
+    title: str = label
+    private_key: str = private_key
+
+class UUIDRoom(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    private_key: str = private_key
+
+class RoomUpdate(BaseModel):
+    uuid_room: UUIDRoom
+    settings: str = None
+    permissions: str = None

@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter
+from fastapi import APIRouter, responses
 
 import api.controls as controls
 import api.data_models as data_models
@@ -11,18 +11,21 @@ router = APIRouter(
     prefix="/users"
 )
 
-@router.post("/user")
-def user(parameters: data_models.HashCredentials):
+@router.post("/users")
+async def users(parameters: data_models.HashCredentials):
     if not controls.user_exists(parameters.username): return presets.nouser
     access = controls.verify_hash(parameters.username, parameters.hash)
 
     try:
         data = controls.fetch_from_db("users", "username", parameters.username)
     except Exception as code:
-        return {
-            "success": False,
-            "error": code
-        }
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
 
     if access:
         return {
@@ -55,17 +58,20 @@ def user(parameters: data_models.HashCredentials):
             },
         }
 
-@router.post("/user/create")
-async def user_create(parameters: data_models.BasicCredentials):
+@router.post("/users/create")
+async def users_create(parameters: data_models.BasicCredentials):
     if controls.user_exists(parameters.username): return presets.userexists
 
     try:
         hash, salt = users.create(parameters.username, parameters.password)
     except Exception as code:
-        return {
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
                 "success": False,
                 "error": code
             }
+        )
     else:
         return {
                 "success": True,
@@ -76,30 +82,33 @@ async def user_create(parameters: data_models.BasicCredentials):
                 }
             }
 
-@router.post("/user/delete")
-def user_delete(parameters: data_models.HashCredentials):
+@router.post("/users/delete")
+async def users_delete(parameters: data_models.HashCredentials):
     if not controls.user_exists(parameters.username): return presets.nouser
     if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
 
     try:
         users.delete(parameters.username, parameters.hash)
     except Exception as code:
-        return {
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
                 "success": False,
                 "error": code
             }
+        )
     else:
         return presets.success
 
-@router.post("/user/update")
-def user_update(parameters: data_models.UserUpdate):
+@router.post("/users/update")
+async def users_update(parameters: data_models.UserUpdate):
     if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
 
     if (
         parameters.channel_settings is None and
         parameters.settings is None and
         parameters.room_settings is None
-    ): return presets.missingparameter
+    ): return presets.invalidformat
 
     try:
         if parameters.channel_settings: channel_settings = generation.aes_decrypt(parameters.channel_settings, parameters.hash)

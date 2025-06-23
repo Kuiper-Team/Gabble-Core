@@ -3,13 +3,14 @@
 #I must add a concise permission system.
 #The REST API must have a SQL injection attack prevention system.
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, responses
+from pydantic import ValidationError
+
+import api.presets as presets
+from api.endpoints import home, rooms, users
 
 api = FastAPI(
     title="Gabble",
-    docs_url=None,
-    openapi_url=None,
-    redoc_url=None,
     responses={
         400: {
             "success": False,
@@ -34,8 +35,15 @@ api = FastAPI(
     }
 )
 
-from api.endpoints import users
+@api.exception_handler(ValidationError)
+async def validation_handler(request: Request, exception: ValidationError):
+    return responses.JSONResponse(
+        status_code=422,
+        content=presets.invalidformat
+    )
 
+api.include_router(home.router)
+api.include_router(rooms.router)
 api.include_router(users.router)
 
 if __name__ == "__main__":
