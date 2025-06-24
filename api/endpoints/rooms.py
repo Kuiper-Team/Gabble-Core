@@ -10,7 +10,7 @@ router = APIRouter(prefix="/rooms")
 
 @router.post("/rooms")
 async def rooms(parameters: data_models.Room):
-    if not controls.verify_hash(parameters.hash_credentials.username, parameters["hash"]): return presets.incorrecthash
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
     if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key): return presets.nopermission
 
     access = rooms.has_permissions(parameters.uuid, parameters.hash_credentials.username, ("access_to_settings", "access_to_permissions"), parameters.private_key)
@@ -82,7 +82,7 @@ async def rooms(parameters: data_models.Room):
 
 @router.post("/rooms/create")
 async def rooms_create(parameters: data_models.TitleRoom):
-    if not controls.verify_hash(parameters.hash_credentials.username, parameters["hash"]): return presets.incorrecthash
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
     if controls.fetch_from_db("rooms", "username", parameters.hash_credentials.username): return presets.roomexists
 
     if not parameters.title.isascii: return presets.invalidformat

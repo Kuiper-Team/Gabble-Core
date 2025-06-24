@@ -49,7 +49,7 @@ def delete(uuid, room_uuid, public_key, private_key):
         except sqlite3.OperationalError:
             raise Exception("noroom")
 
-def update(uuid, settings=None, permissions_map=None):
+def update(uuid, settings=None, permissions=None):
     if settings:
         try:
             cursor.execute("UPDATE rooms SET settings = ? WHERE uuid = ?", (settings, uuid))
@@ -57,9 +57,9 @@ def update(uuid, settings=None, permissions_map=None):
             raise Exception("nouser")
         else:
             connection.commit()
-    if permissions_map:
+    if permissions:
         try:
-            cursor.execute("UPDATE rooms SET permissions_map = ? WHERE uuid = ?", (permissions_map, uuid))
+            cursor.execute("UPDATE rooms SET permissions = ? WHERE uuid = ?", (permissions, uuid))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:

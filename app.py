@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request, responses
 from pydantic import ValidationError
 
 import api.presets as presets
-from api.endpoints import home, rooms, users
+from api.endpoints import home, channels, conversations, invites, messages, rooms, users
 
 api = FastAPI(
     title="Gabble",
@@ -43,6 +43,10 @@ async def validation_handler(request: Request, exception: ValidationError):
     )
 
 api.include_router(home.router)
+api.include_router(channels.router)
+api.include_router(conversations.router)
+api.include_router(invites.router)
+api.include_router(messages.router)
 api.include_router(rooms.router)
 api.include_router(users.router)
 
