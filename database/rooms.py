@@ -17,6 +17,7 @@ channels TEXT,
 members TEXT NOT NULL,
 settings TEXT NOT NULL,
 permissions TEXT NOT NULL,
+ban_list TEXT NOT NULL,
 PRIMARY KEY (uuid)
 )""")
 
@@ -33,12 +34,16 @@ default_permissions = json.dumps(
     }
 )
 
+default_ban_list = json.dumps(
+    {}
+)
+
 def create(title, username):
     key_pair = generation.rsa_generate_pair()
     public_key = key_pair[0]
     uuid = uuid_v7().hex
     try:
-        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), generation.rsa_encrypt(default_settings, public_key), generation.rsa_encrypt(default_permissions, public_key)))
+        cursor.execute("INSERT INTO rooms VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid, public_key, None, generation.rsa_encrypt(username, public_key), generation.rsa_encrypt(default_settings, public_key), generation.rsa_encrypt(default_permissions, public_key), generation.rsa_encrypt(default_ban_list, public_key)))
     except sqlite3.OperationalError:
         raise Exception("roomexists")
     else:
@@ -115,11 +120,11 @@ def add_member(new_member, uuid, private_key):
 
 def kick_member(member, uuid, private_key):
     try:
-        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
+        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key).split(",")
     except sqlite3.OperationalError:
         raise Exception("noroom")
     else:
-        if not member in members.split(","): raise Exception("nomember")
+        if not member in members: raise Exception("nomember")
 
         try:
             cursor.execute("UPDATE rooms SET members = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(json.loads(members.pop(member))), public_key(uuid)), uuid))
@@ -127,6 +132,24 @@ def kick_member(member, uuid, private_key):
             raise Exception("noroom")
         else:
             connection.commit()
+
+def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, expiry_year=None):
+    try:
+        members = generation.rsa_decrypt(cursor.execute("SELECT members FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key).split(",")
+    except sqlite3.OperationalError:
+        raise Exception("noroom")
+    else:
+        if not member in members: raise Exception("nomember")
+
+    try:
+        object = json.loads(generation.rsa_decrypt(cursor.execute("SELECT ban_list FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key))
+    except sqlite3.OperationalError:
+        raise Exception("noroom")
+    else:
+        json_data = json.dumps(object.update({member: "{}-{}-{}".format(expiry_day, expiry_month, expiry_year) if expiry_day and expiry_month and expiry_year else 0}))
+        cursor.execute("UPDATE rooms SET ban_list = ? WHERE username = ?", (json_data, member))
+
+        connection.commit()
 
 def public_key(uuid):
     try:

@@ -149,4 +149,61 @@ async def rooms_update(parameters: data_models.RoomUpdate):
             }
         )
     else:
-        return presets.success, 201
+        return presets.success
+
+@router.post("/rooms/members")
+async def rooms_members(parameters: data_models.Member):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        is_member = parameters.member in rooms.members(parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return {
+            "success": True,
+            "ismember": parameters.member in rooms.members(parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+        }
+
+@router.post("/rooms/members/kick")
+async def rooms_members_kick(parameters: data_models.Member):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key) or not rooms.has_permissions(parameters.uuid_room.uuid, parameters.hash_credentials.username, ("kick_members",), parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        rooms.kick_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return presets.success
+
+@router.post("/rooms/members/ban")
+async def rooms_members_ban(parameters: data_models.BanMember):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key) or not rooms.has_permissions(parameters.uuid_room.uuid, parameters.hash_credentials.username, ("ban_members",), parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        rooms.ban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key, expiry_day=parameters.expiry_day, expiry_month=parameters.expiry_month, expiry_year=parameters.expiry_year)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return presets.success

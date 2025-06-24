@@ -39,3 +39,14 @@ class RoomUpdate(BaseModel):
     uuid_room: UUIDRoom
     settings: str = None
     permissions: str = None
+
+class Member(BaseModel):
+    hash_credentials: HashCredentials
+    uuid_room: UUIDRoom
+    member: str = label
+
+class BanMember(BaseModel):
+    member: Member
+    expiry_day: int = None
+    expiry_month: int = None
+    expiry_year: int = None
