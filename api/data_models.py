@@ -50,3 +50,8 @@ class BanMember(BaseModel):
     expiry_day: int = None
     expiry_month: int = None
     expiry_year: int = None
+
+class Channel(BaseModel):
+    username: str = label
+    uuid: str = uuid_hex
+    private_key: str = private_key

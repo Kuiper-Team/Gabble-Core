@@ -39,6 +39,3 @@ def channel():
                 "tags": data[6]
             }
         }, 200
-
-def reference():
-    pass #(...)
