@@ -1,8 +1,5 @@
 import sqlite3
-import sys
 from datetime import datetime
-
-sys.path.append("..")
 
 import database.channels as channels
 import utilities.generation as generation

@@ -2,7 +2,6 @@ import pyargon2
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
-from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from datetime import datetime
 

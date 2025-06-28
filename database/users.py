@@ -1,10 +1,8 @@
 import json
 import sqlite3
-import sys
 from Crypto.Random import get_random_bytes
 from hashlib import sha256
 
-sys.path.append("..")
 
 import database.conversations as conversations
 import database.rooms as rooms

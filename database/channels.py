@@ -1,8 +1,5 @@
 import json
 import sqlite3
-import sys
-
-sys.path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor
@@ -14,7 +11,7 @@ uuid TEXT NOT NULL,
 room_uuid TEXT NOT NULL,
 type INTEGER NOT NULL,
 settings TEXT NOT NULL,
-permissions TEXT NOT NULL
+permissions TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """)
 

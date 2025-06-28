@@ -1,10 +1,7 @@
 #A .env file containing the path to the database, labelled GABBLE_DATABASE_PATH, must be created in this directory.
 import sqlite3
-import sys
 from dotenv import load_dotenv
 from os import getenv
-
-sys.path.append("..")
 
 import utilities.log as log
 
