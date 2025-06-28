@@ -8,7 +8,7 @@ import utilities.generation as generation
 
 router = APIRouter(prefix="/channels")
 
-@router.post("/channels") #Permissions are needed to see settings and so on.
+@router.post("/channels")
 async def channels(parameters: data_models.Channel):
     if not controls.access_to_channel(parameters.username, parameters.uuid, parameters.private_key): return presets.nopermission
 
@@ -36,13 +36,67 @@ async def channels(parameters: data_models.Channel):
     }
 
 @router.post("/channels/create")
-async def channels_create(parameters: None):
-    pass
+async def channels_create(parameters: data_models.ChannelCreate):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_channel(parameters.username, parameters.uuid, parameters.private_key): return presets.nopermission
+
+    try:
+        channels.create(parameters.title, parameters.room_uuid, parameters.voice_channel, parameters.public_key)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return presets.success
+
+@router.post("/channels/delete")
+async def channels_update(parameters: data_models.ChannelDelete):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_channel(parameters.channel_model.username, parameters.channel_model.uuid, parameters.channel_model.private_key): return presets.nopermission
+
+    try:
+        channels.delete(parameters.channel_model.uuid, parameters.room_uuid, parameters.public_key, parameters.channel_model.private_key)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return presets.success
+
 
 @router.post("/channels/messages")
 async def channels_messages(parameters: None):
     pass
 
-@router.post("/channels/create")
-async def channels_update(parameters: None):
-    pass
+@router.post("/channels/update")
+async def channels_update(parameters: data_models.ChannelUpdate):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_channel(parameters.hash_credentials.username, parameters.channel_model.uuid, parameters.channel_model.private_key): return presets.nopermission
+
+    if (
+        parameters.settings is None and
+        parameters.permission_map is None
+    ): return presets.invalidformat
+
+    try:
+        if parameters.settings: settings = generation.rsa_decrypt(parameters.settings, parameters.channel_model.private_key)
+        if parameters.permissions: permissions = generation.rsa_decrypt(parameters.permissions, parameters.channel_model.private_key)
+        channels.update(parameters.channel_model.uuid, settings=settings, permissions=permissions)
+    except Exception as code:
+        return responses.JSONResponse(
+            status_code=presets.response_code[code],
+            content={
+                "success": False,
+                "error": code
+            }
+        )
+    else:
+        return presets.success

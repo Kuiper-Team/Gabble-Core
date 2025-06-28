@@ -36,6 +36,7 @@ class UUIDRoom(BaseModel):
     private_key: str = private_key
 
 class RoomUpdate(BaseModel):
+    hash_credentials: HashCredentials
     uuid_room: UUIDRoom
     settings: str = None
     permissions: str = None
@@ -46,12 +47,33 @@ class Member(BaseModel):
     member: str = label
 
 class BanMember(BaseModel):
+    hash_credentials: HashCredentials
     member: Member
     expiry_day: int = None
     expiry_month: int = None
     expiry_year: int = None
 
 class Channel(BaseModel):
+    hash_credentials: HashCredentials
     username: str = label
     uuid: str = uuid_hex
     private_key: str = private_key
+
+class ChannelCreate(BaseModel):
+    hash_credentials: HashCredentials
+    title: str = label
+    room_uuid: str = uuid_hex
+    voice_channel: bool
+    public_key: str = public_key
+
+class ChannelDelete(BaseModel):
+    hash_credentials: HashCredentials
+    channel_model: Channel
+    public_key: str = public_key
+    room_uuid: str = uuid_hex
+
+class ChannelUpdate(BaseModel):
+    hash_credentials: HashCredentials
+    channel_model: Channel
+    settings: str = None
+    permissions: str = None
