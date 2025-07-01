@@ -4,6 +4,7 @@ from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from datetime import datetime
+from secrets import choice
 
 def add_zeros(number, full_digit_c): #Pozitif tam sayılar içindir.
     number_str = str(number)
@@ -50,3 +51,10 @@ def rsa_decrypt(ciphertext, private_key):
     decrypted_text = rsa_private_key.decrypt(ciphertext)
 
     return decrypted_text
+
+def random_string(length, characters="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"):
+    result = ""
+    for column in range(length):
+        result += choice(characters)
+
+    return result

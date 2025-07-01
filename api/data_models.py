@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 label = Field(min_length=3, max_length=36)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
-uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 

@@ -9,30 +9,32 @@ from pydantic import ValidationError
 import api.presets as presets
 from api.endpoints import home, channels, conversations, invites, messages, rooms, users
 
+error_handlers = {
+    400: {
+        "success": False,
+        "error": "badrequest"
+    },
+    404: {
+        "success": False,
+        "error": "notfound"
+    },
+    405: {
+        "success": False,
+        "error": "methodnotallowed"
+    },
+    415: {
+        "success": False,
+        "error": "unsupportedmediatype"
+    },
+    500: {
+        "success": False,
+        "error": "internalservererror"
+    }
+}
+
 api = FastAPI(
     title="Gabble",
-    responses={
-        400: {
-            "success": False,
-            "error": "badrequest"
-        },
-        404: {
-            "success": False,
-            "error": "notfound"
-        },
-        405: {
-            "success": False,
-            "error": "methodnotallowed"
-        },
-        415: {
-            "success": False,
-            "error": "unsupportedmediatype"
-        },
-        500: {
-            "success": False,
-            "error": "internalservererror"
-        }
-    }
+    responses=error_handlers
 )
 
 @api.exception_handler(ValidationError)

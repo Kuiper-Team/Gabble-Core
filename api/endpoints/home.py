@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/rooms")
+router = APIRouter()
 
 @router.get("/")
 async def home():

@@ -7,12 +7,10 @@ import api.presets as presets
 import database.users as users
 import utilities.generation as generation
 
-router = APIRouter(
-    prefix="/users"
-)
+router = APIRouter()
 
 @router.post("/users")
-async def users(parameters: data_models.HashCredentials):
+async def r_users(parameters: data_models.HashCredentials):
     if not controls.user_exists(parameters.username): return presets.nouser
     access = controls.verify_hash(parameters.username, parameters.hash)
 
@@ -62,6 +60,7 @@ async def users(parameters: data_models.HashCredentials):
 async def users_create(parameters: data_models.BasicCredentials):
     if controls.user_exists(parameters.username): return presets.userexists
 
+    print(users.default_settings)
     try:
         hash, salt = users.create(parameters.username, parameters.password)
     except Exception as code:

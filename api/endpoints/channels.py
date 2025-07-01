@@ -6,10 +6,10 @@ import api.presets as presets
 import database.channels as channels
 import utilities.generation as generation
 
-router = APIRouter(prefix="/channels")
+router = APIRouter()
 
 @router.post("/channels")
-async def channels(parameters: data_models.Channel):
+async def r_channels(parameters: data_models.Channel):
     if not controls.access_to_channel(parameters.username, parameters.uuid, parameters.private_key): return presets.nopermission
 
     try:

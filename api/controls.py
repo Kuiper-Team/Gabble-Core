@@ -7,7 +7,7 @@ import utilities.generation as generation
 from database.connection import cursor
 
 def access_to_channel(username, uuid, private_key): #Encompasses conversations.
-    pass
+    return True #Temporary solution
 
 def access_to_room(username, uuid, private_key):
     if username in rooms.members(uuid, private_key):

@@ -6,10 +6,10 @@ import api.presets as presets
 import database.rooms as rooms
 import utilities.generation as generation
 
-router = APIRouter(prefix="/rooms")
+router = APIRouter()
 
 @router.post("/rooms")
-async def rooms(parameters: data_models.Room):
+async def r_rooms(parameters: data_models.Room):
     if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
     if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key): return presets.nopermission
 

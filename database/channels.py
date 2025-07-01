@@ -19,7 +19,7 @@ default_settings = {
     #
 }
 
-default_pm = {
+default_permissions = {
     #
 }
 

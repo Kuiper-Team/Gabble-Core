@@ -6,8 +6,8 @@ import api.presets as presets
 import database.invites as invites
 import utilities.generation as generation
 
-router = APIRouter(prefix="/invites")
+router = APIRouter()
 
 @router.post("/invites")
-async def invites(parameters: None):
+async def r_invites(parameters: None):
     pass

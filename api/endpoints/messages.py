@@ -6,8 +6,8 @@ import api.presets as presets
 import database.messages as messages
 import utilities.generation as generation
 
-router = APIRouter(prefix="/messages")
+router = APIRouter()
 
 @router.post("/messages")
-async def messages(parameters: None):
+async def r_messages(parameters: None):
     pass

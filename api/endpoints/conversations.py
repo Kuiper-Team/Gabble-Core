@@ -6,8 +6,8 @@ import api.presets as presets
 import database.conversations as conversations
 import utilities.generation as generation
 
-router = APIRouter(prefix="/conversations")
+router = APIRouter()
 
 @router.post("/conversations")
-async def conversations(parameters: None):
+async def r_conversations(parameters: None):
     pass
