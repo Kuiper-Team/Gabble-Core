@@ -51,6 +51,3 @@ api.include_router(invites.router)
 api.include_router(messages.router)
 api.include_router(rooms.router)
 api.include_router(users.router)
-
-if __name__ == "__main__":
-    uvicorn.run(api, host="0.0.0.0", port=443)

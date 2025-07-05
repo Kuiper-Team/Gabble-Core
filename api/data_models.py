@@ -1,10 +1,11 @@
 from pydantic import BaseModel, Field
 
-label = Field(min_length=3, max_length=36)
+body = Field(min_length=1, max_length=10000)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
-uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
+label = Field(min_length=3, max_length=36)
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
+uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
 
 class BasicCredentials(BaseModel):
     username: str = label
@@ -77,3 +78,24 @@ class ChannelUpdate(BaseModel):
     channel_model: Channel
     settings: str = None
     permissions: str = None
+
+class MessageCreate(BaseModel):
+    hash_credentials: HashCredentials
+    body: str = body
+    channel_uuid: str = uuid_hex
+    private_key: str = private_key
+    public_key: str = public_key
+
+class MessageDelete(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    channel_uuid: str = uuid_hex
+    private_key: str = private_key
+
+class MessageEdit(BaseModel):
+    hash_credentials: HashCredentials
+    body: str = body
+    uuid: str = uuid_hex
+    channel_uuid: str = uuid_hex
+    private_key: str = private_key
+    public_key: str = public_key

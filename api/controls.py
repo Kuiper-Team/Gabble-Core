@@ -17,7 +17,7 @@ def access_to_room(username, uuid, private_key):
 
 def fetch_from_db(table, where, value, column="*"):
     try:
-        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()
+        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()[0]
     except sqlite3.OperationalError:
         return None
     else:
