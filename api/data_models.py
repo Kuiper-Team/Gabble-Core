@@ -2,14 +2,16 @@ from pydantic import BaseModel, Field
 
 body = Field(min_length=1, max_length=10000)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
+invite_type = Field(max_length=1, pattern="(f|r)")
 label = Field(min_length=3, max_length=36)
+password = Field(min_length=10, max_length=48, pattern=r"^[\x00-\x7F]*$")
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
 
 class BasicCredentials(BaseModel):
     username: str = label
-    password: str = Field(min_length=10, max_length=48, pattern=r"^[\x00-\x7F]*$")
+    password: str = password
 
 class HashCredentials(BaseModel):
     username: str = label
@@ -99,3 +101,29 @@ class MessageEdit(BaseModel):
     channel_uuid: str = uuid_hex
     private_key: str = private_key
     public_key: str = public_key
+
+class Invite(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    passcode: str = password
+
+class InviteAccept(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    passcode: str = password
+    private_key: str = private_key
+
+class InviteCreate(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    passcode: str = password
+    type: str = invite_type
+    expiry: int = Field(ge=60, le=31556)
+    target = None
+    room_uuid = None
+
+class InviteDecline(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    passcode: str = password
+    type: str = invite_type

@@ -16,13 +16,7 @@ async def r_channels(parameters: data_models.Channel):
         data = controls.fetch_from_db(channels, "uuid", parameters.uuid)
         if data is None: return presets.nochannel
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
 
     return {
         "success": True,
@@ -43,13 +37,7 @@ async def channels_create(parameters: data_models.ChannelCreate):
     try:
         channels.create(parameters.title, parameters.room_uuid, parameters.voice_channel, parameters.public_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -61,13 +49,7 @@ async def channels_update(parameters: data_models.ChannelDelete):
     try:
         channels.delete(parameters.channel_model.uuid, parameters.room_uuid, parameters.public_key, parameters.channel_model.private_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -91,12 +73,6 @@ async def channels_update(parameters: data_models.ChannelUpdate):
         if parameters.permissions: permissions = generation.rsa_decrypt(parameters.permissions, parameters.channel_model.private_key)
         channels.update(parameters.channel_model.uuid, settings=settings, permissions=permissions)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success

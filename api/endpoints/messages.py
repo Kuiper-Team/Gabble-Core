@@ -17,13 +17,7 @@ async def r_messages(parameters: data_models.UUIDRoom):
     try:
         data = controls.fetch_from_db("message", "uuid", parameters.uuid)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
 
     return {
         "success": True,
@@ -44,13 +38,7 @@ async def messages_create(parameters: data_models.MessageCreate):
     try:
         data = messages.create(parameters.body, parameters.hash_credentials.username, parameters.channel_uuid, parameters.public_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return {
             "success": True,
@@ -71,13 +59,7 @@ async def messages_delete(parameters: data_models.MessageDelete):
     try:
         messages.delete(parameters.uuid, parameters.channel_uuid)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -90,12 +72,6 @@ async def messages_edit(parameters: data_models.MessageEdit):
     try:
         messages.edit(parameters.new_body, parameters.uuid, parameters.channel_uuid, parameters.private_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success

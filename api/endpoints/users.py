@@ -17,13 +17,7 @@ async def r_users(parameters: data_models.HashCredentials):
     try:
         data = controls.fetch_from_db("users", "username", parameters.username)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
 
     if access:
         return {
@@ -60,17 +54,10 @@ async def r_users(parameters: data_models.HashCredentials):
 async def users_create(parameters: data_models.BasicCredentials):
     if controls.user_exists(parameters.username): return presets.userexists
 
-    print(users.default_settings)
     try:
         hash, salt = users.create(parameters.username, parameters.password)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return {
                 "success": True,
@@ -89,13 +76,7 @@ async def users_delete(parameters: data_models.HashCredentials):
     try:
         users.delete(parameters.username, parameters.hash)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -115,9 +96,6 @@ async def users_update(parameters: data_models.UserUpdate):
         if parameters.room_settings: room_settings = generation.aes_decrypt(parameters.room_settings, parameters.hash)
         users.update(parameters.username, display_name=parameters.display_name, settings=settings, room_settings=room_settings, channel_settings=channel_settings, biography=parameters.biography)
     except Exception as code:
-        return {
-                "success": False,
-                "error": code
-            }
+        return presets.auto(code)
 
     return presets.success

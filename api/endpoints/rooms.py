@@ -17,13 +17,7 @@ async def r_rooms(parameters: data_models.Room):
     try:
         data = controls.fetch_from_db("rooms", "uuid", parameters.uuid)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
 
     if access[0] and access[1]:
         return {
@@ -90,13 +84,7 @@ async def rooms_create(parameters: data_models.TitleRoom):
     try:
         public_key, private_key, uuid = rooms.create(parameters.title, parameters.hash_credentials.username)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return {
             "success": True,
@@ -116,13 +104,7 @@ async def rooms_delete(parameters: data_models.UUIDRoom):
     try:
         rooms.delete(parameters.uuid)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -141,13 +123,7 @@ async def rooms_update(parameters: data_models.RoomUpdate):
         if parameters.permissions: permissions = generation.rsa_decrypt(parameters.permissions, parameters.uuid_room.private_key)
         rooms.update(parameters.uuid_room.hash_credentials.username, settings=settings, permissions=permissions)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -159,13 +135,7 @@ async def rooms_members(parameters: data_models.Member):
     try:
         is_member = parameters.member in rooms.members(parameters.uuid_room.uuid, parameters.uuid_room.private_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return {
             "success": True,
@@ -180,13 +150,7 @@ async def rooms_members_kick(parameters: data_models.Member):
     try:
         rooms.kick_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success
 
@@ -198,12 +162,6 @@ async def rooms_members_ban(parameters: data_models.BanMember):
     try:
         rooms.ban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key, expiry_day=parameters.expiry_day, expiry_month=parameters.expiry_month, expiry_year=parameters.expiry_year)
     except Exception as code:
-        return responses.JSONResponse(
-            status_code=presets.response_code[code],
-            content={
-                "success": False,
-                "error": code
-            }
-        )
+        return presets.auto(code)
     else:
         return presets.success

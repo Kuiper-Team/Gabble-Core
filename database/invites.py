@@ -45,7 +45,7 @@ def withdraw(uuid):
 def accept(uuid, passcode, room_private_key=None):
     try:
         inviter = cursor.execute("SELECT inviter FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0]
-        result = generation.aes_decrypt(cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0], pyargon2.hash(cursor.execute("SELECT request_hash FROM user WHERE username = ?", (inviter,)).fetchone()[0], passcode)).split(",")
+        result = get_result(uuid, inviter, passcode)
     except sqlite3.OperationalError:
         raise Exception("noinvite")
     else:
@@ -57,3 +57,9 @@ def accept(uuid, passcode, room_private_key=None):
             raise Exception("invalidformat")
 
         withdraw(uuid)
+
+def get_result(uuid, inviter, passcode):
+    return generation.aes_decrypt(
+        cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0],
+        pyargon2.hash(cursor.execute("SELECT request_hash FROM user WHERE username = ?",(inviter,)).fetchone()[0], passcode)
+    ).split(",")

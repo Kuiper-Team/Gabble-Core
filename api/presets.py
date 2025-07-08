@@ -1,5 +1,14 @@
 from fastapi import responses
 
+def auto(code):
+    return responses.JSONResponse(
+        status_code=response_code[code],
+        content={
+            "success": False,
+            "error": code
+        }
+    )
+
 success = responses.JSONResponse(
     status_code=200,
     content={
@@ -104,6 +113,20 @@ nopermission = responses.JSONResponse(
         "error": "nopermission"
     }
 )
+notaninvitee = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "notaninvitee"
+    }
+)
+nottheinviter = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "nottheinviter"
+    }
+)
 nouser = responses.JSONResponse(
     status_code=406,
     content={
@@ -148,6 +171,8 @@ response_code = {
     "nomessage": 406,
     "noroom": 406,
     "nopermission": 403,
+    "notaninvitee": 406,
+    "nottheinviter": 406,
     "nouser": 406,
     "roomexists": 406,
     "sameasprevious": 406,
