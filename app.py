@@ -1,55 +1,53 @@
-#I might implement CORS, rate limit and JWT too.
+#I might implement rate limit and JWT too.
 #I can use Kafka instead of the database based inbox system.
 #I must add a concise permission system.
-#For CORS, see http://medium.com/@mterrano1/cors-in-a-flask-api-38051388f8cc
 #The REST API must have a SQL injection attack prevention system.
-import utilities.log as log
-from flask import Flask, json
-from utilities.importer import import_directory
+import uvicorn
+from fastapi import FastAPI, Request, responses
+from pydantic import ValidationError
 
-api = Flask(__name__)
-json.provider.DefaultJSONProvider.sort_keys = False
+import api.presets as presets
+from api.endpoints import home, channels, conversations, invites, messages, rooms, users
 
-try:
-    imported = import_directory("api.endpoints", excluded_directory_names=("__pycache",), return_imported_scripts=True)
-except Exception:
-    log.failure("Could not import all of the endpoints. Make sure that the directory structure and script names are proper.")
-else:
-    for script in imported:
-        log.success("Successfully imported {}.".format(script))
-
-
-@api.errorhandler(400)
-def error_400(error):
-    return {
+error_handlers = {
+    400: {
         "success": False,
         "error": "badrequest"
-    }, 400
-
-@api.errorhandler(404)
-def error_404(error):
-    return {
+    },
+    404: {
         "success": False,
         "error": "notfound"
-    }, 404
-
-@api.errorhandler(405)
-def error_405(error):
-    return {
+    },
+    405: {
         "success": False,
         "error": "methodnotallowed"
-    }, 405
-
-@api.errorhandler(415)
-def error_416(error):
-    return {
+    },
+    415: {
         "success": False,
         "error": "unsupportedmediatype"
-    }, 415
-
-@api.errorhandler(500)
-def error_500(error):
-    return {
+    },
+    500: {
         "success": False,
         "error": "internalservererror"
-    }, 500
+    }
+}
+
+api = FastAPI(
+    title="Gabble",
+    responses=error_handlers
+)
+
+@api.exception_handler(ValidationError)
+async def validation_handler(request: Request, exception: ValidationError):
+    return responses.JSONResponse(
+        status_code=422,
+        content=presets.invalidformat
+    )
+
+api.include_router(home.router)
+api.include_router(channels.router)
+api.include_router(conversations.router)
+api.include_router(invites.router)
+api.include_router(messages.router)
+api.include_router(rooms.router)
+api.include_router(users.router)

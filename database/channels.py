@@ -1,8 +1,5 @@
 import json
 import sqlite3
-import sys
-
-sys.path.append("..")
 
 import utilities.generation as generation
 from database.connection import connection, cursor
@@ -14,18 +11,23 @@ uuid TEXT NOT NULL,
 room_uuid TEXT NOT NULL,
 type INTEGER NOT NULL,
 settings TEXT NOT NULL,
-permissions TEXT NOT NULL
+permissions TEXT NOT NULL,
 PRIMARY KEY (uuid))
 """)
 
-def create(title, room_uuid, type, settings, permissions_map, public_key, administrator_hash):
+default_settings = {
+    #
+}
+
+default_permissions = {
+    #
+}
+
+def create(title, room_uuid, voice_channel, public_key):
     #Type 0: Text channel
     #Type 1: Voice channel
-    if not 0 <= type <= 1:
-        raise Exception("invalidtype")
-
     try:
-        cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, room_uuid, generation.rsa_encrypt(type, public_key), generation.aes_encrypt(settings, administrator_hash), generation.aes_encrypt(permissions_map, administrator_hash)))
+        cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, room_uuid, generation.rsa_encrypt("1" if voice_channel else "0", public_key), generation.rsa_encrypt(default_settings, public_key), generation.rsa_encrypt(default_pm, public_key)))
     except sqlite3.OperationalError:
         raise Exception("channelexists")
     else:
@@ -49,7 +51,7 @@ def delete(uuid, room_uuid, public_key, private_key):
         except sqlite3.OperationalError:
             raise Exception("noroom")
 
-def update(uuid, settings=None, permissions_map=None):
+def update(uuid, settings=None, permissions=None):
     if settings:
         try:
             cursor.execute("UPDATE rooms SET settings = ? WHERE uuid = ?", (settings, uuid))
@@ -57,9 +59,9 @@ def update(uuid, settings=None, permissions_map=None):
             raise Exception("nouser")
         else:
             connection.commit()
-    if permissions_map:
+    if permissions:
         try:
-            cursor.execute("UPDATE rooms SET permissions_map = ? WHERE uuid = ?", (permissions_map, uuid))
+            cursor.execute("UPDATE rooms SET permissions = ? WHERE uuid = ?", (permissions, uuid))
         except sqlite3.OperationalError:
             raise Exception("nouser")
         else:

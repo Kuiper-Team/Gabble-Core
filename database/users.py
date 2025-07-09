@@ -1,10 +1,6 @@
 import json
 import sqlite3
-import sys
-from Crypto.Random import get_random_bytes
 from hashlib import sha256
-
-sys.path.append("..")
 
 import database.conversations as conversations
 import database.rooms as rooms
@@ -44,7 +40,7 @@ default_channel_settings = json.dumps(
 )
 
 def create(username, password):
-    salt = get_random_bytes(16)
+    salt = str(generation.random_string(16))
     hash = generation.hashed_password(password, salt)
     try:
         cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, None, default_settings, default_room_settings, default_channel_settings, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))

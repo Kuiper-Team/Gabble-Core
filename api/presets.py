@@ -1,108 +1,186 @@
-alreadyamember = {
-    "success": False,
-    "error": "alreadyamember"
-}, 401
-alreadyfriends = {
-    "success": False,
-    "error": "alreadyfriends"
-}, 401
-channelexists = {
-    "success": False,
-    "error": "channelexists"
-}, 406
-conversationexists = {
-    "success": False,
-    "error": "conversationexists"
-}, 406
-incorrecthash = {
-    "success": False,
-    "error": "incorrecthash"
-}, 401
-incorrectpasscode = {
-    "success": False,
-    "error": "incorrectpasscode"
-}, 401
-incorrectprivatekey = {
-    "success": False,
-    "error": "incorrectprivatekey"
-}, 401
-invalidexpiry = {
-    "success": False,
-    "error": "invalidexpiry"
-}, 406
-invalidformat = {
-    "success": False,
-    "error": "invalidformat"
-}, 406
-inviteexpired = {
-    "success": False,
-    "error": "inviteexpired"
-}, 406
-missingparameter = {
-    "success": False,
-    "error": "missingparameter"
-}, 406
-nochannel = {
-    "success": False,
-    "error": "nochannel"
-}, 406
-noconversations = {
-    "success": False,
-    "error": "noconversations"
-}, 406
-nomember = {
-    "success": False,
-    "error": "nomember"
-}
-nomessage = {
-    "success": False,
-    "error": "nomessage"
-}, 406
-noroom = {
-    "success": False,
-    "error": "noroom"
-}, 406
-nopermission = {
-    "success": False,
-    "error": "nopermission"
-}, 403
-nouser = {
-    "success": False,
-    "error": "nouser"
-}, 406
-roomexists = {
-    "success": False,
-    "error": "roomexists"
-}, 406
-sameasprevious = {
-    "success": False,
-    "error": "sameasprevious",
-}, 406
-userexists = {
-    "success": False,
-    "error": "userexists"
-}, 406
+from fastapi import responses
 
-success = { #Use along with a status code, either 200 or 201.
-    "success": True
-}
-#Dictionary for Error Status Codes:
-status_codes = {
+def auto(code):
+    return responses.JSONResponse(
+        status_code=response_code[code],
+        content={
+            "success": False,
+            "error": code
+        }
+    )
+
+success = responses.JSONResponse(
+    status_code=200,
+    content={
+        "success": True
+    }
+)
+alreadyamember = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "alreadyamember"
+    }
+)
+alreadyfriends = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "alreadyfriends"
+    }
+)
+channelexists = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "channelexists"
+    }
+)
+incorrecthash = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "incorrecthash"
+    }
+)
+incorrectpasscode = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "incorrectpasscode"
+    }
+)
+incorrectprivatekey = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "incorrectprivatekey"
+    }
+)
+invalidexpiry = responses.JSONResponse(
+    status_code=422,
+    content={
+        "success": False,
+        "error": "invalidexpiry"
+    }
+)
+invalidformat = responses.JSONResponse(
+    status_code=422,
+    content={
+        "success": False,
+        "error": "invalidformat"
+    }
+)
+inviteexpired = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "inviteexpired"
+    }
+)
+nochannel = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "nochannel"
+    }
+)
+noconversation = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "noconversation"
+    }
+)
+nomember = responses.JSONResponse(
+    status_code=404,  # Assuming a default for nomember as it's not in response_code, using a common "not found" type error.
+    content={
+        "success": False,
+        "error": "nomember"
+    }
+)
+nomessage = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "nomessage"
+    }
+)
+noroom = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "noroom"
+    }
+)
+nopermission = responses.JSONResponse(
+    status_code=403,
+    content={
+        "success": False,
+        "error": "nopermission"
+    }
+)
+notaninvitee = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "notaninvitee"
+    }
+)
+nottheinviter = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "nottheinviter"
+    }
+)
+nouser = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "nouser"
+    }
+)
+roomexists = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "roomexists"
+    }
+)
+sameasprevious = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "sameasprevious",
+    }
+)
+userexists = responses.JSONResponse(
+    status_code=406,
+    content={
+        "success": False,
+        "error": "userexists"
+    }
+)
+
+response_code = {
+    "success": 200,
     "alreadyamember": 401,
     "alreadyfriends": 401,
     "channelexists": 406,
-    "conversationexists": 406,
     "incorrecthash": 401,
+    "incorrectpasscode": 401,
     "incorrectprivatekey": 401,
-    "invalidexpiry": 406,
-    "invalidformat": 406,
+    "invalidexpiry": 422,
+    "invalidformat": 422,
     "inviteexpired": 406,
-    "missingparameter": 406,
-    "nochannel": 406,
-    "noconversation": 406,
-    "nomessage": 406,
-    "noroom": 406,
+    "nochannel": 404,
+    "noconversation": 404,
+    "nomessage": 404,
+    "noroom": 404,
     "nopermission": 403,
+    "notaninvitee": 406,
+    "nottheinviter": 406,
     "nouser": 406,
     "roomexists": 406,
     "sameasprevious": 406,

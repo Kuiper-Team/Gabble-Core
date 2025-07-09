@@ -1,0 +1,166 @@
+from fastapi import APIRouter, responses
+
+import api.controls as controls
+import api.data_models as data_models
+import api.presets as presets
+import database.rooms as rooms
+import utilities.generation as generation
+
+router = APIRouter()
+
+@router.post("/rooms")
+async def r_rooms(parameters: data_models.Room):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key): return presets.nopermission
+
+    access = rooms.has_permissions(parameters.uuid, parameters.hash_credentials.username, ("access_to_settings", "access_to_permissions"), parameters.private_key)
+    try:
+        data = controls.fetch_from_db("rooms", "uuid", parameters.uuid)
+    except Exception as code:
+        return presets.auto(code)
+
+    if access[0] and access[1]:
+        return {
+            "success": True,
+            "data": {
+                "uuid": parameters.uuid,
+                "title": data[0],
+                "public_key": data[2],
+                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "members": rooms.members(parameters.uuid, parameters.private_key),
+                "sensitive": {
+                    "settings": generation.rsa_decrypt(data[5], parameters.private_key),
+                    "permissions": generation.rsa_decrypt(data[6], parameters.private_key)
+                }
+            }
+        }
+    elif access[0]:
+        return {
+            "success": True,
+            "data": {
+                "uuid": parameters.uuid,
+                "title": data[0],
+                "public_key": data[2],
+                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "members": rooms.members(parameters.uuid, parameters.private_key),
+                "sensitive": {
+                    "settings": generation.rsa_decrypt(data[5], parameters.private_key)
+                }
+            }
+        }
+    elif access[1]:
+        return {
+            "success": True,
+            "data": {
+                "uuid": parameters.uuid,
+                "title": data[0],
+                "public_key": data[2],
+                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "members": rooms.members(parameters.uuid, parameters.private_key),
+                "sensitive": {
+                    "permissions": generation.rsa_decrypt(data[6], parameters.private_key)
+                }
+            }
+        }
+    else:
+        return {
+            "success": True,
+            "data": {
+                "uuid": parameters.uuid,
+                "title": data[0],
+                "public_key": data[2],
+                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "members": rooms.members(parameters.uuid, parameters.private_key)
+            }
+        }
+
+@router.post("/rooms/create")
+async def rooms_create(parameters: data_models.TitleRoom):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if controls.fetch_from_db("rooms", "username", parameters.hash_credentials.username): return presets.roomexists
+
+    if not parameters.title.isascii: return presets.invalidformat
+
+    try:
+        public_key, private_key, uuid = rooms.create(parameters.title, parameters.hash_credentials.username)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return {
+            "success": True,
+            "room": {
+                "uuid": uuid,
+                "public_key": public_key,
+                "private_key": private_key
+            }
+        }
+
+@router.post("/rooms/delete")
+async def rooms_delete(parameters: data_models.UUIDRoom):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key) or not rooms.has_permissions(parameters.hash_credentials.username, parameters.uuid, ("delete_room",), parameters.private_key): return presets.nopermission
+
+    try:
+        rooms.delete(parameters.uuid)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return presets.success
+
+@router.post("/rooms/update")
+async def rooms_update(parameters: data_models.RoomUpdate):
+    if not controls.verify_hash(parameters.uuid_room.hash_credentials.username, parameters.uuid_room.hash_credentials.username): return presets.incorrecthash
+    if not rooms.has_permissions(parameters.uuid_room.hash_credentials.username, parameters.uuid_room.uuid, ("update_settings",), parameters.uuid_room.private_key): return presets.nopermission
+
+    if (
+        parameters.settings is None and
+        parameters.permissions is None
+    ): return presets.invalidformat
+
+    try:
+        if parameters.settings: settings = generation.rsa_decrypt(parameters.settings, parameters.uuid_room.private_key)
+        if parameters.permissions: permissions = generation.rsa_decrypt(parameters.permissions, parameters.uuid_room.private_key)
+        rooms.update(parameters.uuid_room.hash_credentials.username, settings=settings, permissions=permissions)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return presets.success
+
+@router.post("/rooms/members")
+async def rooms_members(parameters: data_models.Member):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        is_member = parameters.member in rooms.members(parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return {
+            "success": True,
+            "ismember": parameters.member in rooms.members(parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+        }
+
+@router.post("/rooms/members/kick")
+async def rooms_members_kick(parameters: data_models.Member):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key) or not rooms.has_permissions(parameters.uuid_room.uuid, parameters.hash_credentials.username, ("kick_members",), parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        rooms.kick_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return presets.success
+
+@router.post("/rooms/members/ban")
+async def rooms_members_ban(parameters: data_models.BanMember):
+    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid_room.uuid, parameters.uuid_room.private_key) or not rooms.has_permissions(parameters.uuid_room.uuid, parameters.hash_credentials.username, ("ban_members",), parameters.uuid_room.private_key): return presets.nopermission
+
+    try:
+        rooms.ban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key, expiry_day=parameters.expiry_day, expiry_month=parameters.expiry_month, expiry_year=parameters.expiry_year)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return presets.success

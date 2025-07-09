@@ -2,9 +2,10 @@ import pyargon2
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
-from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
+from Crypto.Util.Padding import pad, unpad
 from datetime import datetime
+from secrets import choice
 
 def add_zeros(number, full_digit_c): #Pozitif tam sayılar içindir.
     number_str = str(number)
@@ -23,14 +24,19 @@ def hashed_password(password, salt):
 def aes_encrypt(text, hash):
     iv = Random.get_random_bytes(16)
     cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
+    padded = pad(text.encode("utf-8"), AES.block_size)
+    ciphertext = cipher.encrypt(padded)
 
-    return iv.decode("utf-8") + cipher.encrypt(text.encode("utf-8")).decode("utf-8")
+    return b64encode(iv + ciphertext).decode("utf-8")
 
 def aes_decrypt(ciphertext, hash):
-    iv = ciphertext[:16].encode("utf-8")
-    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
+    decoded = b64decode(ciphertext.encode("utf-8"))
 
-    return cipher.decrypt(ciphertext).decode("utf-8")
+    iv = decoded[:16]
+    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
+    decrypted_padded = cipher.decrypt(decoded[16:])
+
+    return unpad(decrypted_padded, AES.block_size).decode("utf-8")
 
 def rsa_generate_pair(bits=1024):
     pair = RSA.generate(bits, Random.new().read)
@@ -51,3 +57,10 @@ def rsa_decrypt(ciphertext, private_key):
     decrypted_text = rsa_private_key.decrypt(ciphertext)
 
     return decrypted_text
+
+def random_string(length, characters="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"):
+    result = ""
+    for column in range(length):
+        result += choice(characters)
+
+    return result
