@@ -90,9 +90,8 @@ async def rooms_create(parameters: data_models.TitleRoom):
             "success": True,
             "room": {
                 "uuid": uuid,
-                "title": parameters.title,
                 "public_key": public_key,
-                "private_key": private_key,
+                "private_key": private_key
             }
         }
 

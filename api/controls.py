@@ -6,8 +6,16 @@ import database.users as users
 import utilities.generation as generation
 from database.connection import cursor
 
-def access_to_channel(username, uuid, private_key): #Encompasses conversations.
-    return True #Temporary solution
+def access_to_conversation(username, uuid, private_key):
+    try:
+        users = generation.aes_decrypt(cursor.execute("SELECT users FROM conversations WHERE uuid = ?", (uuid)).fetchone()[0], private_key).split(",")
+    except sqlite3.OperationalError:
+        return False
+    else:
+        return username in users
+
+def access_to_channel(username, uuid, private_key):
+    return True #Temporary
 
 def access_to_room(username, uuid, private_key):
     if username in rooms.members(uuid, private_key):

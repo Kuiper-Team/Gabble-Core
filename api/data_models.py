@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 
 body = Field(min_length=1, max_length=10000)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
-invite_type = Field(max_length=1, pattern="(f|r)")
-label = Field(min_length=3, max_length=36)
+invite_type = Field(max_length=1, pattern=r"(f|r)")
+label = Field(min_length=3, max_length=36, pattern=r"[^,]+")
 password = Field(min_length=10, max_length=48, pattern=r"^[\x00-\x7F]*$")
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
@@ -127,3 +127,12 @@ class InviteDecline(BaseModel):
     uuid: str = uuid_hex
     passcode: str = password
     type: str = invite_type
+
+class Conversation(BaseModel):
+    hash_credentials: HashCredentials
+    uuid: str = uuid_hex
+    private_key: str = private_key
+
+class ConversationCreate(BaseModel):
+    hash_credentials: HashCredentials
+    target: str = label

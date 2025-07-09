@@ -79,28 +79,35 @@ inviteexpired = responses.JSONResponse(
     }
 )
 nochannel = responses.JSONResponse(
-    status_code=406,
+    status_code=404,
     content={
         "success": False,
         "error": "nochannel"
     }
 )
+noconversation = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "noconversation"
+    }
+)
 nomember = responses.JSONResponse(
-    status_code=406,  # Assuming a default for nomember as it's not in response_code, using a common "not found" type error.
+    status_code=404,  # Assuming a default for nomember as it's not in response_code, using a common "not found" type error.
     content={
         "success": False,
         "error": "nomember"
     }
 )
 nomessage = responses.JSONResponse(
-    status_code=406,
+    status_code=404,
     content={
         "success": False,
         "error": "nomessage"
     }
 )
 noroom = responses.JSONResponse(
-    status_code=406,
+    status_code=404,
     content={
         "success": False,
         "error": "noroom"
@@ -167,9 +174,10 @@ response_code = {
     "invalidexpiry": 422,
     "invalidformat": 422,
     "inviteexpired": 406,
-    "nochannel": 406,
-    "nomessage": 406,
-    "noroom": 406,
+    "nochannel": 404,
+    "noconversation": 404,
+    "nomessage": 404,
+    "noroom": 404,
     "nopermission": 403,
     "notaninvitee": 406,
     "nottheinviter": 406,
