@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import ClassVar
 
 body = Field(min_length=1, max_length=10000)
 hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
@@ -19,10 +20,10 @@ class HashCredentials(BaseModel):
 
 class UserUpdate(BaseModel):
     hash_credentials: HashCredentials
-    display_name: str = None
-    channel_settings: str = None
-    settings: str = None
-    room_settings: str = None
+    display_name: ClassVar[str] = None
+    channel_settings: ClassVar[str] = None
+    settings: ClassVar[str] = None
+    room_settings: ClassVar[str] = None
 
 class Room(BaseModel):
     hash_credentials: HashCredentials
@@ -41,8 +42,8 @@ class UUIDRoom(BaseModel):
 class RoomUpdate(BaseModel):
     hash_credentials: HashCredentials
     uuid_room: UUIDRoom
-    settings: str = None
-    permissions: str = None
+    settings: ClassVar[str] = None
+    permissions: ClassVar[str] = None
 
 class Member(BaseModel):
     hash_credentials: HashCredentials
@@ -52,9 +53,9 @@ class Member(BaseModel):
 class BanMember(BaseModel):
     hash_credentials: HashCredentials
     member: Member
-    expiry_day: int = None
-    expiry_month: int = None
-    expiry_year: int = None
+    expiry_day: ClassVar[int] = None
+    expiry_month: ClassVar[int] = None
+    expiry_year: ClassVar[int] = None
 
 class Channel(BaseModel):
     hash_credentials: HashCredentials
@@ -78,8 +79,8 @@ class ChannelDelete(BaseModel):
 class ChannelUpdate(BaseModel):
     hash_credentials: HashCredentials
     channel_model: Channel
-    settings: str = None
-    permissions: str = None
+    settings: ClassVar[str] = None
+    permissions: ClassVar[str] = None
 
 class MessageCreate(BaseModel):
     hash_credentials: HashCredentials
@@ -119,8 +120,8 @@ class InviteCreate(BaseModel):
     passcode: str = password
     type: str = invite_type
     expiry: int = Field(ge=60, le=31556)
-    target = None
-    room_uuid = None
+    target: ClassVar[None] = None
+    room_uuid: ClassVar[None] = None
 
 class InviteDecline(BaseModel):
     hash_credentials: HashCredentials

@@ -43,7 +43,7 @@ def create(username, password):
     salt = str(generation.random_string(16))
     hash = generation.hashed_password(password, salt)
     try:
-        cursor.execute("INSERT INTO user VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, None, default_settings, default_room_settings, default_channel_settings, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, default_settings, default_room_settings, default_channel_settings, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
@@ -53,7 +53,7 @@ def create(username, password):
 
 def delete(username, hash):
     try:
-        cursor.execute("DELETE FROM user WHERE username = ?", (username,))
+        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         raise Exception("nouser")
     else:
