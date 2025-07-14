@@ -2,6 +2,8 @@
 #I can use Kafka instead of the database based inbox system.
 #I must add a concise permission system.
 #The REST API must have a SQL injection attack prevention system.
+from http.client import HTTPException
+
 import uvicorn
 from fastapi import FastAPI, Request, responses
 from pydantic import ValidationError
@@ -9,36 +11,83 @@ from pydantic import ValidationError
 import api.presets as presets
 from api.endpoints import home, channels, conversations, invites, messages, rooms, users
 
-error_handlers = {
-    400: {
-        "success": False,
-        "error": "badrequest"
-    },
-    404: {
-        "success": False,
-        "error": "notfound"
-    },
-    405: {
-        "success": False,
-        "error": "methodnotallowed"
-    },
-    415: {
-        "success": False,
-        "error": "unsupportedmediatype"
-    },
-    500: {
-        "success": False,
-        "error": "internalservererror"
-    }
-}
-
 api = FastAPI(
     title="Gabble",
-    responses=error_handlers
+    version="1.0.0"
 )
 
+@api.exception_handler(500)
+async def error_500(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": "internalservererror"
+        }
+    )
+
+@api.exception_handler(400)
+async def error_400(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=400,
+        content={
+            "success": False,
+            "error": "badrequest"
+        }
+    )
+
+@api.exception_handler(401)
+async def error_401(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=401,
+        content={
+            "success": False,
+            "error": "unauthorized"
+        }
+    )
+
+@api.exception_handler(403)
+async def error_403(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=403,
+        content={
+            "success": False,
+            "error": "forbidden"
+        }
+    )
+
+@api.exception_handler(404)
+async def error_404(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=404,
+        content={
+            "success": False,
+            "error": "notfound"
+        }
+    )
+
+@api.exception_handler(405)
+async def error_405(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=405,
+        content={
+            "success": False,
+            "error": "methodnotallowed"
+        }
+    )
+
+@api.exception_handler(415)
+async def error_415(request: Request, exception: HTTPException):
+    return responses.JSONResponse(
+        status_code=415,
+        content={
+            "success": False,
+            "error": "unsupportedmediatype"
+        }
+    )
+
 @api.exception_handler(ValidationError)
-async def validation_handler(request: Request, exception: ValidationError):
+async def validation_error(request: Request, exception: ValidationError):
     return responses.JSONResponse(
         status_code=422,
         content=presets.invalidformat

@@ -43,7 +43,7 @@ def create(username, password):
     salt = str(generation.random_string(16))
     hash = generation.hashed_password(password, salt)
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, default_settings, default_room_settings, default_channel_settings, None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(default_settings, hash), generation.aes_encrypt(default_room_settings, hash), generation.aes_encrypt(default_channel_settings, hash), None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
