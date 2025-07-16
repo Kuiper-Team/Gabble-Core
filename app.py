@@ -1,11 +1,8 @@
 #I might implement rate limit and JWT too.
 #I can use Kafka instead of the database based inbox system.
 #I must add a concise permission system.
-#The REST API must have a SQL injection attack prevention system.
-from http.client import HTTPException
-
 import uvicorn
-from fastapi import FastAPI, Request, responses
+from fastapi import FastAPI, HTTPException, Request, responses
 from pydantic import ValidationError
 
 import api.presets as presets

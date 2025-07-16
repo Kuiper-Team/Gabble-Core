@@ -139,7 +139,7 @@ def update(username, display_name=None, settings=None, room_settings=None, chann
 
 def exists(username):
     try:
-        cursor.execute("SELECT username FROM user WHERE username = ?", (username,))
+        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
     except sqlite3.OperationalError:
         return False
     else:
