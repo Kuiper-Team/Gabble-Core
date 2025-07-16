@@ -139,11 +139,11 @@ def update(username, display_name=None, settings=None, room_settings=None, chann
 
 def exists(username):
     try:
-        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+        username = cursor.execute("SELECT username FROM users WHERE username = ?", (username,)).fetchone()
     except sqlite3.OperationalError:
         return False
     else:
-        return True
+        return username is not None
 
 def key_chain(username, hash):
     try:
