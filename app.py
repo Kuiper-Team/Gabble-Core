@@ -1,7 +1,6 @@
 #I might implement rate limit and JWT too.
 #I can use Kafka instead of the database based inbox system.
 #I must add a concise permission system.
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request, responses
 from pydantic import ValidationError
 

@@ -1,4 +1,3 @@
-import pyargon2
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
@@ -18,25 +17,21 @@ def add_zeros(number, full_digit_c): #Pozitif tam sayılar içindir.
 def unix_timestamp(date_time):
     return datetime.timestamp(date_time) * 1000
 
-def hashed_password(password, salt):
-    return pyargon2.hash(password, salt)
+def aes_encrypt(text, key):
+    data = text.encode()
 
-def aes_encrypt(text, hash):
-    iv = Random.get_random_bytes(16)
-    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
-    padded = pad(text.encode("utf-8"), AES.block_size)
-    ciphertext = cipher.encrypt(padded)
+    cipher = AES.new(key, AES.MODE_CBC)
+    ciphertext_b = cipher.encrypt(pad(data, AES.block_size))
 
-    return b64encode(iv + ciphertext).decode("utf-8")
+    return b64encode(cipher.iv).decode() + b64encode(ciphertext_b).decode()
 
-def aes_decrypt(ciphertext, hash):
-    decoded = b64decode(ciphertext.encode("utf-8"))
+def aes_decrypt(ciphertext, key):
+    decoded = b64decode(ciphertext)
+    encrypted = decoded[16:]
 
-    iv = decoded[:16]
-    cipher = AES.new(key=bytes.fromhex(hash), mode=AES.MODE_CBC, iv=iv)
-    decrypted_padded = cipher.decrypt(decoded[16:])
+    cipher = AES.new(key, AES.MODE_CBC, decoded[:16])
 
-    return unpad(decrypted_padded, AES.block_size).decode("utf-8")
+    return unpad(cipher.decrypt(encrypted), AES.block_size)
 
 def rsa_generate_pair(bits=1024):
     pair = RSA.generate(bits, Random.new().read)

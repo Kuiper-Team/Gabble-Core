@@ -1,4 +1,5 @@
 import json
+import pyargon2
 import sqlite3
 from hashlib import sha256
 
@@ -35,21 +36,36 @@ default_room_settings = json.dumps(
 
 default_channel_settings = json.dumps(
     {
-
+        "title": "channel"
     }
 )
 
 def create(username, password):
-    salt = str(generation.random_string(16))
-    hash = generation.hashed_password(password, salt)
+    salt = generation.random_string(16)
+    hash = pyargon2.hash(password, salt, hash_len=16)
+    key_hash = sha256((salt + hash).encode())
+    key = key_hash.digest()
     try:
-        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (username, username, generation.aes_encrypt(default_settings, hash), generation.aes_encrypt(default_room_settings, hash), generation.aes_encrypt(default_channel_settings, hash), None, None, sha256(username.encode("utf-8")).hexdigest(), generation.aes_encrypt("{}", hash), generation.aes_encrypt("{}", hash)))
+        cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                username,
+                username,
+                generation.aes_encrypt(default_settings, key),
+                generation.aes_encrypt(default_room_settings, key),
+                generation.aes_encrypt(default_channel_settings, key),
+                None,
+                None,
+                sha256(username.encode()).hexdigest(),
+                generation.aes_encrypt("{}", key),
+                generation.aes_encrypt("{}", key)
+            )
+        )
     except sqlite3.OperationalError:
         raise Exception("userexists")
     else:
         connection.commit()
 
-        return hash, salt
+        return key_hash.hexdigest()
 
 def delete(username, hash):
     try:

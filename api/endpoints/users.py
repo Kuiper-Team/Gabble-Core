@@ -55,7 +55,7 @@ async def users_create(parameters: data_models.BasicCredentials):
     if controls.user_exists(parameters.username): return presets.userexists
 
     try:
-        hash, salt = users.create(parameters.username, parameters.password)
+        key = users.create(parameters.username, parameters.password)
     except Exception as code:
         return presets.auto(code)
     else:
@@ -63,8 +63,7 @@ async def users_create(parameters: data_models.BasicCredentials):
                 "success": True,
                 "user": {
                     "username": parameters.username,
-                    "hash": hash,
-                    "salt": salt
+                    "key": key
                 }
             }
 

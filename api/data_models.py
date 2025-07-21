@@ -2,10 +2,10 @@ from pydantic import BaseModel, Field
 from typing import ClassVar
 
 body = Field(min_length=1, max_length=10000)
-hash = Field(min_length=64, max_length=64, pattern=r"^[A-Fa-f0-9]{64}$")
+base64 = Field(min_length=1, pattern="^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
 invite_type = Field(max_length=1, pattern=r"(f|r)")
 label = Field(min_length=3, max_length=36, pattern=r"[^,]+")
-password = Field(min_length=10, max_length=48, pattern=r"^[\x00-\x7F]*$")
+password = Field(min_length=12, max_length=48, pattern=r"^[\x00-\x7F]*$")
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
@@ -16,7 +16,7 @@ class BasicCredentials(BaseModel):
 
 class HashCredentials(BaseModel):
     username: str = label
-    hash: str = hash
+    hash: str = base64
 
 class UserUpdate(BaseModel):
     hash_credentials: HashCredentials
