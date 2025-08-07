@@ -10,7 +10,7 @@ from database.connection import connection, cursor
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS users (
 username TEXT NOT NULL,
-display_name TEXT,
+display_name TEXT NOT NULL,
 settings TEXT NOT NULL,
 room_settings TEXT NOT NULL,
 channel_settings TEXT NOT NULL,
@@ -68,13 +68,6 @@ def create(username, password):
         return key_hash.hexdigest()
 
 def delete(username, hash):
-    try:
-        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
-
     object = key_chain(username, hash)
     for uuid in object:
         try:
@@ -92,6 +85,13 @@ def delete(username, hash):
 
         except Exception("noroom"): pass
         except Exception("noconversation"): pass
+
+    try:
+        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+    except sqlite3.OperationalError:
+        raise Exception("nouser")
+    else:
+        connection.commit()
 
 def friends(username, hash, list=True):
     try:

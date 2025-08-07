@@ -44,7 +44,7 @@ def user_exists(username):
 
 def verify_hash(username, hash):
     try:
-        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM user WHERE username = ?", (username,)).fetchone()[0], hash))
+        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
     except Exception:
         return False
 

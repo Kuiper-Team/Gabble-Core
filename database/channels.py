@@ -1,19 +1,25 @@
 import json
-import sqlite3
 
+import database.rooms as rooms
+import sqlite_wrapper as sql
 import utilities.generation as generation
 from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS channels (
-title TEXT NOT NULL,
-uuid TEXT NOT NULL,
-room_uuid TEXT NOT NULL,
-type INTEGER NOT NULL,
-settings TEXT NOT NULL,
-permissions TEXT NOT NULL,
-PRIMARY KEY (uuid))
-""")
+table = "channels"
+
+sql.table(
+    table,
+    (
+        sql.C("title", "TEXT", not_null=True),
+        sql.C("uuid", "TEXT", not_null=True),
+        sql.C("room_uuid", "TEXT", not_null=True),
+        sql.C("type", "INTEGER", not_null=True),
+        sql.C("settings", "TEXT", not_null=True),
+        sql.C("permissions", "TEXT", not_null=True)
+    ),
+    primary_key="uuid"
+)
 
 default_settings = {
     #
@@ -26,51 +32,27 @@ default_permissions = {
 def create(title, room_uuid, voice_channel, public_key):
     #Type 0: Text channel
     #Type 1: Voice channel
-    try:
-        cursor.execute("INSERT INTO channels VALUES (?, ?, ?, ?, ?, ?)", (generation.rsa_encrypt(title, public_key), uuid_v7().hex, room_uuid, generation.rsa_encrypt("1" if voice_channel else "0", public_key), generation.rsa_encrypt(default_settings, public_key), generation.rsa_encrypt(default_pm, public_key)))
-    except sqlite3.OperationalError:
-        raise Exception("channelexists")
-    else:
-        connection.commit()
+    sql.insert(table,
+       (
+           generation.rsa_encrypt(title, public_key),
+           uuid_v7().hex,
+           room_uuid,
+           generation.rsa_encrypt("1" if voice_channel else "0", public_key),
+           generation.rsa_encrypt(default_settings, public_key),
+           generation.rsa_encrypt(default_permissions, public_key)
+       ),
+       safe="channelexists"
+    )
 
 def delete(uuid, room_uuid, public_key, private_key):
-    try:
-        cursor.execute("DELETE FROM channels WHERE uuid = ? AND room_uuid = ?", (uuid, room_uuid))
-    except sqlite3.OperationalError:
-        raise Exception("nochannel")
-    else:
-        connection.commit()
+    sql.delete(table, "uuid", uuid, safe="nochannel")
 
-        try:
-            try:
-                channels = json.loads(generation.rsa_decrypt(cursor.execute("SELECT channels FROM rooms WHERE uuid = ?", (uuid,)), private_key))
-            except sqlite3.OperationalError:
-                raise Exception("noroom")
-
-            cursor.execute("UPDATE rooms SET channels = ? WHERE uuid = ?", (generation.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), uuid))
-        except sqlite3.OperationalError:
-            raise Exception("noroom")
+    channels = rooms.channels(uuid, private_key)
+    sql.update(table, "channels", generation.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), "uuid", uuid, safe="noroom")
 
 def update(uuid, settings=None, permissions=None):
-    if settings:
-        try:
-            cursor.execute("UPDATE rooms SET settings = ? WHERE uuid = ?", (settings, uuid))
-        except sqlite3.OperationalError:
-            raise Exception("nouser")
-        else:
-            connection.commit()
-    if permissions:
-        try:
-            cursor.execute("UPDATE rooms SET permissions = ? WHERE uuid = ?", (permissions, uuid))
-        except sqlite3.OperationalError:
-            raise Exception("nouser")
-        else:
-            connection.commit()
+    sql.update(table, "settings", settings, "uuid", uuid, condition=settings, safe="nouser")
+    sql.update(table, "permissions", permissions, "uuid", uuid, condition=permissions, safe="nouser")
 
 def room_of(uuid):
-    try:
-        room_uuid = cursor.execute("SELECT room_uuid FROM channels WHERE uuid = ?", (uuid,))
-    except sqlite3.OperationalError:
-        raise Exception("nochannel")
-    else:
-        return room_uuid
+    return sql.select(table, "uuid", uuid, column="room_uuid", safe="nochannel")

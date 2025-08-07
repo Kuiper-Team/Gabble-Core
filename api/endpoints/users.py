@@ -15,7 +15,7 @@ async def r_users(parameters: data_models.HashCredentials):
     access = controls.verify_hash(parameters.username, parameters.hash)
 
     try:
-        data = controls.fetch_from_db("users", "username", parameters.username)
+        data = controls.fetch_from_db("users", "username", parameters.username) #RETURNS NONE
     except Exception as code:
         return presets.auto(code)
 
@@ -75,6 +75,7 @@ async def users_delete(parameters: data_models.HashCredentials):
     try:
         users.delete(parameters.username, parameters.hash)
     except Exception as code:
+        print(code)
         return presets.auto(code)
     else:
         return presets.success
