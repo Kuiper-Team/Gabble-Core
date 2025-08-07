@@ -3,20 +3,18 @@ import json
 import database.rooms as rooms
 import sqlite_wrapper as sql
 import utilities.generation as generation
-from database.connection import connection, cursor
 from utilities.uuidv7 import uuid_v7
 
 table = "channels"
 
-sql.table(
-    table,
+sql.table(table,
     (
-        sql.C("title", "TEXT", not_null=True),
-        sql.C("uuid", "TEXT", not_null=True),
-        sql.C("room_uuid", "TEXT", not_null=True),
-        sql.C("type", "INTEGER", not_null=True),
-        sql.C("settings", "TEXT", not_null=True),
-        sql.C("permissions", "TEXT", not_null=True)
+        sql.C("title", sql.Types.TEXT, not_null=True),
+        sql.C("uuid", sql.Types.TEXT, not_null=True),
+        sql.C("room_uuid", sql.Types.TEXT, not_null=True),
+        sql.C("type", sql.Types.INTEGER, not_null=True),
+        sql.C("settings", sql.Types.TEXT, not_null=True),
+        sql.C("permissions", sql.Types.TEXT, not_null=True)
     ),
     primary_key="uuid"
 )

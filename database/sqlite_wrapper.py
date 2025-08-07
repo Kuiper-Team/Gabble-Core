@@ -9,6 +9,13 @@ class C:
         self.type = type
         self.not_null = not_null
 
+class Types:
+    BLOB = "BLOB"
+    INTEGER = "INTEGER"
+    NUMERIC = "NUMERIC"
+    REAL = "REAL"
+    TEXT = "TEXT"
+
 #safe means "safe value", which is returned when an exception occurs.
 #condition refers to the boolean value that decides whether the query should be run or not. This feature is useful for optional parameters.
 
