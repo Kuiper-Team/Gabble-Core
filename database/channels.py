@@ -1,7 +1,7 @@
 import json
 
 import database.rooms as rooms
-import sqlite_wrapper as sql
+import database.sqlite_wrapper as sql
 import utilities.generation as generation
 from utilities.uuidv7 import uuid_v7
 

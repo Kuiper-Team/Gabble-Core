@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Tuple
 
-from connection import connection, cursor
+from database.connection import connection, cursor
 
 class C:
     def __init__(self, name, type, not_null=False):
@@ -16,13 +16,13 @@ class Types:
     REAL = "REAL"
     TEXT = "TEXT"
 
-#safe means "safe value", which is returned when an exception occurs.
+#safe refers to the exception which is raised when an exception occurs.
 #condition refers to the boolean value that decides whether the query should be run or not. This feature is useful for optional parameters.
 
 def table(name, columns: Tuple[C, ...], primary_key=None, safe=None):
     query = f"CREATE TABLE IF NOT EXISTS {name} ("
 
-    column_count = len(columns)
+    column_count = len(columns) - 1
     column_i = 0
     for column in columns:
         query += f"{column.name} {column.type}"

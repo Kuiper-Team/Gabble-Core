@@ -1,8 +1,5 @@
-import sqlite3
-
 import utilities.generation as generation
-import sqlite_wrapper as sql
-from database.connection import connection, cursor
+import database.sqlite_wrapper as sql
 from utilities.uuidv7 import uuid_v7
 
 table = "conversations"
