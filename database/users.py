@@ -111,7 +111,7 @@ def exists(username):
     return data is not None
 
 def key_chain(username, hash):
-   object = cryptography.aes_decrypt(sql.select(table, "username", username, column="key_chain", exception="nouser")[0], hash)
+    object = cryptography.aes_decrypt(sql.select(table, "username", username, column="key_chain", exception="nouser")[0], hash)
 
     return json.loads(object)
 
