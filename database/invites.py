@@ -2,64 +2,59 @@ import sqlite3
 import pyargon2
 
 import database.rooms as rooms
+import database.sqlite_wrapper as sql
 import database.users as users
-import utilities.generation as generation
+import utilities.cryptography as cryptography
 from database.connection import connection, cursor
 from uuid import uuid4
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS invites (
-uuid TEXT NOT NULL,
-inviter TEXT NOT NULL,
-expiry INTEGER NOT NULL,
-result TEXT NOT NULL,
-PRIMARY KEY (uuid))
-""")
+table = "invites"
+
+sql.table(table,
+    (
+        sql.C("uuid", sql.Types.TEXT, not_null=True),
+        sql.C("inviter", sql.Types.TEXT, not_null=True),
+        sql.C("expiry", sql.Types.INTEGER, not_null=True),
+        sql.C("result", sql.Types.TEXT, not_null=True),
+    ),
+    primary_key="uuid"
+)
 
 def create(inviter, expiry, result, passcode):
-    try:
-        request_hash = cursor.execute("SELECT request_hash FROM user WHERE username = ?", (inviter,)).fetchone()[0]
-    except sqlite3.OperationalError:
-        raise Exception("nouser")
-    else:
-        connection.commit()
+    request_hash = sql.select("users", "username", inviter, column="request_hash", exception="nouser")[0]
+    hash = cryptography.argon2_hash(request_hash, custom_salt=passcode)
 
-        hash = pyargon2.hash(request_hash, passcode)
-        try:
-            cursor.execute("INSERT INTO invites VALUES (?, ?, ?, ?)", (uuid4().hex, inviter, generation.aes_encrypt(expiry, hash), generation.aes_encrypt(result, hash)))
-        except sqlite3.OperationalError:
-            raise Exception("couldntinsert")
+    sql.insert(table, (
+            uuid4().hex,
+            inviter,
+            cryptography.aes_encrypt(expiry, hash)
+        ),
+        exception="couldntinsert"
+    )
 
     return hash
 
 def withdraw(uuid):
-    try:
-        cursor.execute("DELETE FROM invites WHERE uuid = ?", (uuid,))
-    except sqlite3.OperationalError:
-        raise Exception("norequest")
-    else:
-        connection.commit()
+    sql.delete(table, "uuid", uuid, exception="norequest")
 
 #Options for "type":
 #f: Friend request
 #r: Room invite
 def accept(uuid, passcode, room_private_key=None):
-    try:
-        inviter = cursor.execute("SELECT inviter FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0]
-        result = get_result(uuid, inviter, passcode)
-    except sqlite3.OperationalError:
-        raise Exception("noinvite")
-    else:
-        if result[0] == "f": #f,username1,username2
-            users.add_friends(result[1], result[2])
-        elif result[0] == "r" and room_private_key: #r,uuid,username
-            rooms.add_member(result[2], result[1], room_private_key)
-        else:
-            raise Exception("invalidformat")
+    inviter = sql.select(table, "uuid", uuid, column="inviter", exception="noinvite")[0]
+    result = get_result(uuid, inviter, passcode)
 
-        withdraw(uuid)
+    if result[0] == "f": #f,username1,username2
+        users.add_friends(result[1], result[2])
+    elif result[0] == "r" and room_private_key: #r,uuid,username
+        rooms.add_member(result[2], result[1], room_private_key)
+    else:
+        raise Exception("invalidformat")
+
+    withdraw(uuid)
 
 def get_result(uuid, inviter, passcode):
-    return generation.aes_decrypt(
-        cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0],
-        pyargon2.hash(cursor.execute("SELECT request_hash FROM user WHERE username = ?",(inviter,)).fetchone()[0], passcode)
+    return cryptography.aes_decrypt(
+        sql.select(table, "uuid", uuid, column="result")[0],
+        pyargon2.hash(sql.select("users", "username", inviter, column="request_hash")[0], passcode)
     ).split(",")

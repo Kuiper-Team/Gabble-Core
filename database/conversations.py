@@ -17,10 +17,10 @@ def create(username1, username2):
     key_pair = generation.rsa_generate_pair(),
     public_key = key_pair[0]
     uuid = uuid_v7().hex
-    sql.insert(table, (uuid, generation.rsa_encrypt(username1 + "," + username2, public_key), public_key), safe="conversationexists")
+    sql.insert(table, (uuid, generation.rsa_encrypt(username1 + "," + username2, public_key), public_key), exception="conversationexists")
 
     return uuid, public_key, key_pair[1]
 
 def delete(uuid):
-    sql.delete(table, "uuid", uuid, safe="noconversation")
+    sql.delete(table, "uuid", uuid, exception="noconversation")
     #Perhaps, key_chain cleanup?

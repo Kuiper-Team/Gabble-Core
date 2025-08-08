@@ -39,18 +39,18 @@ def create(title, room_uuid, voice_channel, public_key):
            generation.rsa_encrypt(default_settings, public_key),
            generation.rsa_encrypt(default_permissions, public_key)
        ),
-       safe="channelexists"
+       exception="channelexists"
     )
 
 def delete(uuid, room_uuid, public_key, private_key):
-    sql.delete(table, "uuid", uuid, safe="nochannel")
+    sql.delete(table, "uuid", uuid, exception="nochannel")
 
     channels = rooms.channels(uuid, private_key)
-    sql.update(table, "channels", generation.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), "uuid", uuid, safe="noroom")
+    sql.update(table, "channels", generation.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), "uuid", uuid, exception="noroom")
 
 def update(uuid, settings=None, permissions=None):
-    sql.update(table, "settings", settings, "uuid", uuid, condition=settings, safe="nouser")
-    sql.update(table, "permissions", permissions, "uuid", uuid, condition=permissions, safe="nouser")
+    sql.update(table, "settings", settings, "uuid", uuid, condition=settings, exception="nouser")
+    sql.update(table, "permissions", permissions, "uuid", uuid, condition=permissions, exception="nouser")
 
 def room_of(uuid):
-    return sql.select(table, "uuid", uuid, column="room_uuid", safe="nochannel")
+    return sql.select(table, "uuid", uuid, column="room_uuid", exception="nochannel")

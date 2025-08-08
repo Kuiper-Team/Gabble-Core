@@ -19,7 +19,7 @@ class Types:
 #safe refers to the exception which is raised when an exception occurs.
 #condition refers to the boolean value that decides whether the query should be run or not. This feature is useful for optional parameters.
 
-def table(name, columns: Tuple[C, ...], primary_key=None, safe=None):
+def table(name, columns: Tuple[C, ...], primary_key=None, exception=None, safe=False):
     query = f"CREATE TABLE IF NOT EXISTS {name} ("
 
     column_count = len(columns) - 1
@@ -38,47 +38,62 @@ def table(name, columns: Tuple[C, ...], primary_key=None, safe=None):
     try:
         cursor.execute(query)
     except sqlite3.OperationalError as error:
-        if safe is not None: return safe
-        else: raise error
+        if safe: return
+        if exception is not None:
+            raise exception
+        else:
+            raise error
 
-def select(table, where, value, column="*", safe=None):
+def select(table, where, value, column="*", exception=None, safe=False):
     try:
         data = cursor.execute(
             f"SELECT {column} FROM {table} WHERE {where} = ?",
             (value,),
         ).fetchone()
     except sqlite3.OperationalError as error:
-        if safe is not None: return safe
-        else: raise error
+        if safe: return
+        if exception is not None:
+            raise exception
+        else:
+            raise error
     else:
         if data is None or len(data) == 0: return None
         else: return data
 
-def insert(table, values: Tuple, safe=None):
+def insert(table, values: Tuple, exception=None, safe=False):
     try:
         cursor.execute(f"INSERT INTO {table} VALUES ({"?" * len(values)})", values)
     except sqlite3.OperationalError as error:
-        if safe is not None: raise safe
-        else: raise error
+        if safe: return
+        if exception is not None:
+            raise exception
+        else:
+            raise error
     else:
         connection.commit()
 
-def update(table, column, assign, where, value, condition=True, safe=None):
+def update(table, column, assign, where, value, condition=True, exception=None, safe=False):
     if not condition: return #Abort
 
     try:
         cursor.execute(f"UPDATE {table} SET {column} = ? WHERE {where} = ?", (assign, value))
     except sqlite3.OperationalError as error:
-        if safe is not None: raise safe
-        else: raise error
+        if safe: return
+        if exception is not None:
+            raise exception
+        else:
+            raise error
     else:
         connection.commit()
 
-def delete(table, where, value, safe=True):
+def delete(table, where, value, exception=None, safe=False):
     try:
         cursor.execute(f"DELETE FROM {table} WHERE {where} = ?", (value,))
     except sqlite3.OperationalError as error:
-        if safe is not None: raise safe
-        else: raise error
+        if safe: return
+        if exception is not None:
+            raise exception
+        else:
+            raise error
     else:
         connection.commit()

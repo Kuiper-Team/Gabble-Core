@@ -1,37 +1,41 @@
+import pyargon2
+import secrets
 from base64 import b64decode, b64encode
 from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import pad, unpad
-from datetime import datetime
+from pyargon2 import hash_bytes
 
-def add_zeros(number, full_digit_c):
-    number_str = str(number)
-    digit_c = len(number_str)
-    if digit_c == full_digit_c:
-        return number_str
-    else:
-        return (full_digit_c - digit_c) * "0" + number_str
 
-def unix_timestamp(date_time):
-    return datetime.timestamp(date_time) * 1000
+#Argon2 Functions
+def argon2_hash(password: str, custom_salt=None):
+    salt = secrets.token_bytes(16) if custom_salt is None else custom_salt
+    hash = pyargon2.hash_bytes(password.encode(), salt, hash_len=16).digest()
 
-def aes_encrypt(text, key):
+    return hash, salt
+
+#AES Functions
+def aes_encrypt(text, hash):
     data = text.encode()
+    hash_b = bytes.fromhex(hash)
 
-    cipher = AES.new(key, AES.MODE_CBC)
+    cipher = AES.new(hash_b, AES.MODE_CBC)
     ciphertext_b = cipher.encrypt(pad(data, AES.block_size))
 
-    return b64encode(cipher.iv).decode() + b64encode(ciphertext_b).decode()
+    return b64encode(cipher.iv + ciphertext_b).decode()
 
-def aes_decrypt(ciphertext, key):
+def aes_decrypt(ciphertext, hash):
+    hash_b = bytes.fromhex(hash)
+
     decoded = b64decode(ciphertext)
     encrypted = decoded[16:]
 
-    cipher = AES.new(key, AES.MODE_CBC, decoded[:16])
+    cipher = AES.new(hash_b, AES.MODE_CBC, iv=decoded[:16])
 
     return unpad(cipher.decrypt(encrypted), AES.block_size)
 
+#RSA Functions
 def rsa_generate_pair(bits=1024):
     pair = RSA.generate(bits, Random.new().read)
     public_key = pair.publickey().exportKey("PEM")
