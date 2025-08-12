@@ -57,7 +57,7 @@ async def messages_delete(parameters: data_models.MessageDelete):
     if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
 
     try:
-        messages.delete(parameters.uuid, parameters.channel_uuid)
+        messages.delete(parameters.uuid)
     except Exception as code:
         return presets.auto(code)
     else:

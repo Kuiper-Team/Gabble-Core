@@ -92,7 +92,6 @@ class MessageCreate(BaseModel):
 class MessageDelete(BaseModel):
     hash_credentials: HashCredentials
     uuid: str = uuid_hex
-    channel_uuid: str = uuid_hex
     private_key: str = private_key
 
 class MessageEdit(BaseModel):
