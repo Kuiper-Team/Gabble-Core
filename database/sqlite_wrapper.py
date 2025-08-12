@@ -1,7 +1,21 @@
+#A .env file containing an environmental variable the path to the database, labelled GABBLE_DATABASE_PATH, must be created in this directory.
 import sqlite3
+from dotenv import load_dotenv
+from os import getenv
 from typing import Tuple
 
-from database.connection import connection, cursor
+import utilities.log as log
+
+load_dotenv()
+
+try:
+    connection = sqlite3.connect(getenv("GABBLE_DATABASE_PATH"), check_same_thread=False)
+except Exception:
+    log.failure("Could not connect to the database.")
+    exit(1)
+else:
+    log.success("Connected to the database.")
+cursor = connection.cursor()
 
 class C:
     def __init__(self, name, type, not_null=False):

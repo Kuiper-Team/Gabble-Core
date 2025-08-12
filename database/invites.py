@@ -1,11 +1,9 @@
-import sqlite3
 import pyargon2
 
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
 import database.users as users
 import utilities.cryptography as cryptography
-from database.connection import connection, cursor
 from uuid import uuid4
 
 table = "invites"
