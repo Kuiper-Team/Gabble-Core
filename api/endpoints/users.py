@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, responses
+from fastapi import APIRouter
 
 import api.controls as controls
 import api.data_models as data_models
@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.post("/users")
 async def r_users(parameters: data_models.HashCredentials):
-    if not controls.user_exists(parameters.username): return presets.nouser
+    if not users.exists(parameters.username): return presets.nouser
     access = controls.verify_hash(parameters.username, parameters.hash)
 
     try:
@@ -52,7 +52,7 @@ async def r_users(parameters: data_models.HashCredentials):
 
 @router.post("/users/create")
 async def users_create(parameters: data_models.BasicCredentials):
-    if controls.user_exists(parameters.username): return presets.userexists
+    if users.exists(parameters.username): return presets.userexists
 
     try:
         key = users.create(parameters.username, parameters.password)
@@ -69,7 +69,7 @@ async def users_create(parameters: data_models.BasicCredentials):
 
 @router.post("/users/delete")
 async def users_delete(parameters: data_models.HashCredentials):
-    if not controls.user_exists(parameters.username): return presets.nouser
+    if not users.exists(parameters.username): return presets.nouser
     if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
 
     try:

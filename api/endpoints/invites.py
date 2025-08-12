@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, responses
+from fastapi import APIRouter
 
 import api.controls as controls
 import api.data_models as data_models
@@ -48,7 +48,7 @@ async def r_invites(parameters: data_models.Invite):
 
 @router.post("/invites/accept")
 async def invites_accept(parameters: data_models.InviteAccept):
-    result = controls.fetch_invite_result(parameters.uuid, parameters.passcode)
+    result = invites.get_result(parameters.uuid, parameters.passcode)
 
     if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
     if not controls.verify_passcode(parameters.uuid, parameters.passcode): return presets.incorrectpasscode

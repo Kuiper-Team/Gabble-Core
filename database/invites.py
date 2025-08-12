@@ -51,8 +51,9 @@ def accept(uuid, passcode, room_private_key=None):
 
     withdraw(uuid)
 
-def get_result(uuid, inviter, passcode):
+def get_result(uuid, passcode):
+    inviter = sql.select(table, "uuid", uuid, column="inviter", exception="noinvite")[0]
     return cryptography.aes_decrypt(
-        sql.select(table, "uuid", uuid, column="result")[0],
+        sql.select(table, "uuid", uuid, column="result", exception="noinvite")[0],
         pyargon2.hash(sql.select("users", "username", inviter, column="request_hash")[0], passcode)
     ).split(",")

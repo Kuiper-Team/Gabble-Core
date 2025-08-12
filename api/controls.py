@@ -14,7 +14,7 @@ def access_to_conversation(username, uuid, private_key):
     else:
         return username in users
 
-def access_to_channel(username, uuid, private_key):
+def access_to_channel(username, uuid, private_key): #WILL USE PERMISSIONS
     return True #Temporary
 
 def access_to_room(username, uuid, private_key):
@@ -31,18 +31,7 @@ def fetch_from_db(table, where, value, column="*"):
     else:
         return data
 
-def fetch_invite_result(uuid, passcode, list=True):
-    try:
-        result = cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0]
-    except sqlite3.OperationalError:
-        return None
-    else:
-        return result.split(",") if list else result
-
-def user_exists(username):
-    return users.exists(username)
-
-def verify_hash(username, hash):
+def verify_hash(username, hash): #WILL BE REPLACED WITH AN AUTHENTICATION SYSTEM
     try:
         json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
     except Exception:
