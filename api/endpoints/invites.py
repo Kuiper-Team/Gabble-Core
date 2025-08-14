@@ -1,3 +1,4 @@
+#Needs an overhaul
 from datetime import datetime
 from fastapi import APIRouter
 
@@ -6,6 +7,7 @@ import api.data_models as data_models
 import api.presets as presets
 import database.invites as invites
 import database.users as users
+import utilities.cryptography as cryptography
 import utilities.generation as generation
 import utilities.validation as validation
 
@@ -21,7 +23,7 @@ async def r_invites(parameters: data_models.Invite):
     except Exception as code:
         return presets.auto(code)
 
-    result = generation.aes_decrypt(data[3], parameters.passcode).split(",")
+    result = cryptography.aes_decrypt(data[3], parameters.passcode).split(",")
     if result[0] == "f":
         return {
             "success": True,

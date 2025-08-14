@@ -2,13 +2,12 @@ import json
 import sqlite3
 
 import database.rooms as rooms
-import database.users as users
-import utilities.generation as generation
-from database.connection import cursor
+import database.sqlite_wrapper as sql
+import utilities.cryptography as cryptography
 
 def access_to_conversation(username, uuid, private_key):
     try:
-        users = generation.aes_decrypt(cursor.execute("SELECT users FROM conversations WHERE uuid = ?", (uuid)).fetchone()[0], private_key).split(",")
+        users = cryptography.aes_decrypt(cursor.execute("SELECT users FROM conversations WHERE uuid = ?", (uuid)).fetchone()[0], private_key).split(",")
     except sqlite3.OperationalError:
         return False
     else:
@@ -33,13 +32,13 @@ def fetch_from_db(table, where, value, column="*"):
 
 def verify_hash(username, hash): #WILL BE REPLACED WITH AN AUTHENTICATION SYSTEM
     try:
-        json.loads(generation.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
+        json.loads(cryptography.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
     except Exception:
         return False
 
 def verify_passcode(uuid, passcode):
     try:
-        result = generation.aes_decrypt(cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0], passcode)
+        result = cryptography.aes_decrypt(cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0], passcode)
     except Exception:
         return False
     else:
@@ -47,7 +46,7 @@ def verify_passcode(uuid, passcode):
 
 def verify_private_key(uuid, private_key):
     try:
-        title = generation.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
+        title = cryptography.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
     except Exception:
         return False
     else:

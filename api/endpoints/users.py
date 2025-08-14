@@ -4,8 +4,9 @@ from fastapi import APIRouter
 import api.controls as controls
 import api.data_models as data_models
 import api.presets as presets
+import database.sqlite_wrapper as sql
 import database.users as users
-import utilities.generation as generation
+import utilities.cryptography as cryptography
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ async def r_users(parameters: data_models.HashCredentials):
     access = controls.verify_hash(parameters.username, parameters.hash)
 
     try:
-        data = controls.fetch_from_db("users", "username", parameters.username) #RETURNS NONE
+        data = sql.select(users.table, "username", parameters.username, exception="nouser")
     except Exception as code:
         return presets.auto(code)
 
@@ -30,10 +31,10 @@ async def r_users(parameters: data_models.HashCredentials):
                     "request_hash": data[7]
                 },
                 "private": {
-                    "settings": generation.aes_decrypt(data[2], parameters.hash),
-                    "room_settings": generation.aes_decrypt(data[3], parameters.hash),
-                    "channel_settings": generation.aes_decrypt(data[4], parameters.hash),
-                    "key_chain": json.dumps(generation.aes_decrypt(data[9], parameters.hash))
+                    "settings": cryptography.aes_decrypt(data[2], parameters.hash),
+                    "room_settings": cryptography.aes_decrypt(data[3], parameters.hash),
+                    "channel_settings": cryptography.aes_decrypt(data[4], parameters.hash),
+                    "key_chain": json.dumps(cryptography.aes_decrypt(data[9], parameters.hash))
                 }
             },
         }
@@ -91,9 +92,9 @@ async def users_update(parameters: data_models.UserUpdate):
     ): return presets.invalidformat
 
     try:
-        if parameters.channel_settings: channel_settings = generation.aes_decrypt(parameters.channel_settings, parameters.hash)
-        if parameters.settings: settings = generation.aes_decrypt(parameters.settings, parameters.hash)
-        if parameters.room_settings: room_settings = generation.aes_decrypt(parameters.room_settings, parameters.hash)
+        if parameters.channel_settings: channel_settings = cryptography.aes_decrypt(parameters.channel_settings, parameters.hash)
+        if parameters.settings: settings = cryptography.aes_decrypt(parameters.settings, parameters.hash)
+        if parameters.room_settings: room_settings = cryptography.aes_decrypt(parameters.room_settings, parameters.hash)
         users.update(parameters.username, display_name=parameters.display_name, settings=settings, room_settings=room_settings, channel_settings=channel_settings, biography=parameters.biography)
     except Exception as code:
         return presets.auto(code)

@@ -4,16 +4,18 @@ import api.controls as controls
 import api.data_models as data_models
 import api.presets as presets
 import database.channels as channels
-import utilities.generation as generation
+import database.sqlite_wrapper as sql
+import utilities.cryptography as cryptography
 
 router = APIRouter()
 
 @router.post("/channels")
 async def r_channels(parameters: data_models.Channel):
+    if not channels.exists(parameters.uuid): return presets.nochannel
     if not controls.access_to_channel(parameters.username, parameters.uuid, parameters.private_key): return presets.nopermission
 
     try:
-        data = controls.fetch_from_db(channels, "uuid", parameters.uuid)
+        data = sql.select(channels.table, "uuid", parameters.uuid, exception="nochannel")
         if data is None: return presets.nochannel
     except Exception as code:
         return presets.auto(code)
@@ -60,6 +62,7 @@ async def channels_messages(parameters: None):
 @router.post("/channels/update")
 async def channels_update(parameters: data_models.ChannelUpdate):
     if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
+    if not channels.exists(parameters.uuid): return presets.nochannel
     if not controls.access_to_channel(parameters.hash_credentials.username, parameters.channel_model.uuid, parameters.channel_model.private_key): return presets.nopermission
 
     if (
@@ -68,8 +71,8 @@ async def channels_update(parameters: data_models.ChannelUpdate):
     ): return presets.invalidformat
 
     try:
-        if parameters.settings: settings = generation.rsa_decrypt(parameters.settings, parameters.channel_model.private_key)
-        if parameters.permissions: permissions = generation.rsa_decrypt(parameters.permissions, parameters.channel_model.private_key)
+        if parameters.settings: settings = cryptography.rsa_decrypt(parameters.settings, parameters.channel_model.private_key)
+        if parameters.permissions: permissions = cryptography.rsa_decrypt(parameters.permissions, parameters.channel_model.private_key)
         channels.update(parameters.channel_model.uuid, settings=settings, permissions=permissions)
     except Exception as code:
         return presets.auto(code)

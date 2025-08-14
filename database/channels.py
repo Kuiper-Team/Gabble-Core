@@ -54,3 +54,8 @@ def update(uuid, settings=None, permissions=None):
 
 def room_of(uuid):
     return sql.select(table, "uuid", uuid, column="room_uuid", exception="nochannel")
+
+def exists(uuid):
+    data = sql.select(table, "uuid", uuid, safe=True)
+
+    return data is not None
