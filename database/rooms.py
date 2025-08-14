@@ -146,3 +146,8 @@ def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, ex
 
 def unban_member(): #To be done
     pass
+
+def exists(uuid):
+    data = sql.select(table, "uuid", uuid, safe=True)
+
+    return data is not None

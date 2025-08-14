@@ -16,7 +16,7 @@ async def r_users(parameters: data_models.HashCredentials):
     access = controls.verify_hash(parameters.username, parameters.hash)
 
     try:
-        data = sql.select(users.table, "username", parameters.username, exception="nouser")
+        data = sql.select(users.table, "username", parameters.username, exception="nouser")[0]
     except Exception as code:
         return presets.auto(code)
 

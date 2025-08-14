@@ -15,8 +15,7 @@ async def r_channels(parameters: data_models.Channel):
     if not controls.access_to_channel(parameters.username, parameters.uuid, parameters.private_key): return presets.nopermission
 
     try:
-        data = sql.select(channels.table, "uuid", parameters.uuid, exception="nochannel")
-        if data is None: return presets.nochannel
+        data = sql.select(channels.table, "uuid", parameters.uuid, exception="nochannel")[0]
     except Exception as code:
         return presets.auto(code)
 

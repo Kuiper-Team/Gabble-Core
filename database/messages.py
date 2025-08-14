@@ -43,3 +43,8 @@ def delete(uuid):
 
 def edit(new_body, uuid, channel_uuid, public_key):
     sql.update(table, "body", cryptography.aes_encrypt(new_body, public_key), "uuid", uuid, exception="nomessage")
+
+def exists(uuid):
+    data = sql.select(table, "uuid", uuid, safe=True)
+
+    return data is not None
