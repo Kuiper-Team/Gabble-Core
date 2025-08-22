@@ -1,4 +1,4 @@
-#A .env file containing an environmental variable the path to the database, labelled GABBLE_DATABASE_PATH, must be created in this directory.
+#A .env file containing an environmental variable for the path to the database, labelled GABBLE_DATABASE_PATH, must be created in this directory.
 import sqlite3
 from dotenv import load_dotenv
 from os import getenv

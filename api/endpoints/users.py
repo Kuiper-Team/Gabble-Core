@@ -1,3 +1,4 @@
+#A .env file containing an environmental variable for JWT secret key, labelled SECRET, must be created in this directory.
 import json
 from fastapi import APIRouter
 
