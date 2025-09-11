@@ -27,9 +27,6 @@ async def r_oauth2(parameters: data_models.OAuth2):
     #verify_hash() -> authenticate() -> Will be like get_current_user() from the tutorial
 
     return {
-        "access_token": cryptography.jwt_access_token({"sub": parameters.username}, timedelta(minutes=parameters.expiry_minutes), secret)
+        "access_token": cryptography.jwt_access_token({"sub": parameters.username}, timedelta(minutes=parameters.expiry_minutes), secret),
         "token_type": "bearer"
     }
-
-@router.post("/oauth2/id")
-async def oauth2_id(parameters: data_models.OAuth2ID = Depends())
