@@ -1,3 +1,4 @@
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 from typing import ClassVar
 
@@ -139,3 +140,12 @@ class Conversation(BaseModel):
 class ConversationCreate(BaseModel):
     hash_credentials: HashCredentials
     target: str = label
+
+class OAuth2(BaseModel):
+    username: str = label
+    hash: str = base64
+    expiry_minutes: int
+
+class OAuth2ID(BaseModel):
+    username: str = label
+    hash: str = base64

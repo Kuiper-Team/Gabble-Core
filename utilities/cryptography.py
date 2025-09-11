@@ -1,3 +1,4 @@
+import jwt
 import pyargon2
 import secrets
 from base64 import b64decode, b64encode
@@ -5,7 +6,7 @@ from Crypto import Random
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import pad, unpad
-from pyargon2 import hash_bytes
+from datetime import datetime, timedelta, timezone
 
 
 #Argon2 Functions
@@ -55,3 +56,12 @@ def rsa_decrypt(ciphertext, private_key):
     decrypted_text = rsa_private_key.decrypt(ciphertext)
 
     return decrypted_text
+
+#JWT Functions
+def jwt_access_token(data: dict, expiry_delta: timedelta, secret: str, algorithm="HS256"):
+    expiry = datetime.now(timezone.utc) + expiry_delta
+
+    to_encode = data.copy()
+    to_encode.update({"exp": expiry})
+
+    return jwt.encode(to_encode, secret, algorithm=algorithm)

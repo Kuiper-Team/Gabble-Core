@@ -30,7 +30,7 @@ def fetch_from_db(table, where, value, column="*"):
     else:
         return data
 
-def verify_hash(username, hash): #WILL BE REPLACED WITH AN AUTHENTICATION SYSTEM
+def verify_hash(username, hash): #MY MODEL WILL BE APPLIED HERE
     try:
         json.loads(cryptography.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
     except Exception:

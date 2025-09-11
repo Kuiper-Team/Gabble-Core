@@ -36,6 +36,14 @@ channelexists = responses.JSONResponse(
         "error": "channelexists"
     }
 )
+incorrectpassword = responses.JSONResponse(
+    status_code=401,
+    headers={"WWW-Authenticate": "Bearer"},
+    content={
+        "success": False,
+        "error": "incorrectcredentials"
+    }
+)
 incorrecthash = responses.JSONResponse(
     status_code=401,
     content={
