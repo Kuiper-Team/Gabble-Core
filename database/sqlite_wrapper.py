@@ -74,13 +74,13 @@ def select(table, where, value, column="*", exception=None, safe=False):
         if data is None or len(data) == 0: return None
         else: return data
 
-def insert(table, values: Tuple, exception=None, safe=False):
+def insert(table, values: Tuple, exception: str or None=None, safe=False):
     try:
-        cursor.execute(f"INSERT INTO {table} VALUES ({"?" * len(values)})", values)
+        cursor.execute(f"INSERT INTO {table} VALUES ({','.join(['?'] * len(values))})", values)
     except sqlite3.OperationalError as error:
         if safe: return
         if exception is not None:
-            raise exception
+            raise Exception(exception)
         else:
             raise error
     else:

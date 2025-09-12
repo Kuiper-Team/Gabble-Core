@@ -10,16 +10,20 @@ from datetime import datetime, timedelta, timezone
 
 
 #Argon2 Functions
-def argon2_hash(password: str, custom_salt=None):
-    salt = secrets.token_bytes(16) if custom_salt is None else custom_salt
-    hash = pyargon2.hash_bytes(password.encode(), salt, hash_len=16).digest()
+def argon2_hash(password: str, custom_salt=None) -> tuple[bytes, bytes]:
+    salt = secrets.token_bytes(32) if custom_salt is None else custom_salt
+    hash = pyargon2.hash_bytes(password.encode(), salt, hash_len=16, encoding="raw")
 
     return hash, salt
 
 #AES Functions
-def aes_encrypt(text, hash):
+def aes_encrypt(text, hash: bytes or str):
     data = text.encode()
-    hash_b = bytes.fromhex(hash)
+
+    if isinstance(hash, str):
+        hash_b = bytes.fromhex(hash)
+    else:
+        hash_b = hash
 
     cipher = AES.new(hash_b, AES.MODE_CBC)
     ciphertext_b = cipher.encrypt(pad(data, AES.block_size))

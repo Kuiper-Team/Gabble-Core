@@ -142,10 +142,10 @@ class ConversationCreate(BaseModel):
     target: str = label
 
 class OAuth2(BaseModel):
-    username: str = label
+    uuid: str = label
     hash: str = base64
     expiry_minutes: int
 
 class OAuth2ID(BaseModel):
-    username: str = label
+    uuid: str = label
     hash: str = base64

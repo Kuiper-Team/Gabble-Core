@@ -1,18 +1,8 @@
-#I can use Kafka instead of the database based inbox system.
-import jwt
-from datetime import datetime, timedelta, timezone
+import pydantic
+from fastapi import FastAPI, HTTPException, Request, responses
 
-from fastapi import Depends, FastAPI, HTTPException, Request, responses
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
-from pydantic import ValidationError
-from typing import Annotated
-
-import api.data_models as data_models
 import api.presets as presets
-import database.sqlite_wrapper as sql
-import database.users as users
-from api.endpoints import home, channels, conversations, invites, messages, rooms, users
+from api.endpoints import home, channels, conversations, invites, messages, oauth2, rooms, users
 
 api = FastAPI(
     title="Gabble",
@@ -89,8 +79,8 @@ async def error_415(request: Request, exception: HTTPException):
         }
     )
 
-@api.exception_handler(ValidationError)
-async def validation_error(request: Request, exception: ValidationError):
+@api.exception_handler(pydantic.ValidationError)
+async def validation_error(request: Request, exception: pydantic.ValidationError):
     return responses.JSONResponse(
         status_code=422,
         content=presets.invalidformat
@@ -101,5 +91,6 @@ api.include_router(channels.router)
 api.include_router(conversations.router)
 api.include_router(invites.router)
 api.include_router(messages.router)
+api.include_router(oauth2.router)
 api.include_router(rooms.router)
 api.include_router(users.router)

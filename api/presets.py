@@ -1,6 +1,7 @@
 from fastapi import responses
 
-def auto(code):
+def auto(exception: Exception):
+    code = str(exception)
     return responses.JSONResponse(
         status_code=response_code[code],
         content={
@@ -34,6 +35,13 @@ channelexists = responses.JSONResponse(
     content={
         "success": False,
         "error": "channelexists"
+    }
+)
+couldnotperform = responses.JSONResponse(
+    status_code=500,
+    content={
+        "success": False,
+        "error": "couldnotperform"
     }
 )
 incorrectpassword = responses.JSONResponse(
@@ -176,6 +184,8 @@ response_code = {
     "alreadyamember": 401,
     "alreadyfriends": 401,
     "channelexists": 406,
+    "couldnotperform": 500,
+    "incorrectcredentials": 401,
     "incorrecthash": 401,
     "incorrectpasscode": 401,
     "incorrectprivatekey": 401,
@@ -184,6 +194,7 @@ response_code = {
     "inviteexpired": 406,
     "nochannel": 404,
     "noconversation": 404,
+    "nomember": 404,
     "nomessage": 404,
     "noroom": 404,
     "nopermission": 403,

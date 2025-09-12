@@ -11,7 +11,7 @@ import utilities.cryptography as cryptography
 
 router = APIRouter()
 
-@router.post("/users")
+@router.post("/users") #WILL BE UPDATED
 async def r_users(parameters: data_models.HashCredentials):
     if not users.exists(parameters.username): return presets.nouser
     access = controls.verify_hash(parameters.username, parameters.hash)
@@ -54,22 +54,20 @@ async def r_users(parameters: data_models.HashCredentials):
 
 @router.post("/users/create")
 async def users_create(parameters: data_models.BasicCredentials):
-    if users.exists(parameters.username): return presets.userexists
-
     try:
-        key = users.create(parameters.username, parameters.password)
+        uuid, key = users.create(parameters.username, parameters.password)
     except Exception as code:
         return presets.auto(code)
     else:
         return {
                 "success": True,
                 "user": {
-                    "username": parameters.username,
+                    "uuid": uuid,
                     "key": key
                 }
             }
 
-@router.post("/users/delete")
+@router.post("/users/delete") #WILL BE UPDATED
 async def users_delete(parameters: data_models.HashCredentials):
     if not users.exists(parameters.username): return presets.nouser
     if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
@@ -77,12 +75,11 @@ async def users_delete(parameters: data_models.HashCredentials):
     try:
         users.delete(parameters.username, parameters.hash)
     except Exception as code:
-        print(code)
         return presets.auto(code)
     else:
         return presets.success
 
-@router.post("/users/update")
+@router.post("/users/update") #WILL BE UPDATED
 async def users_update(parameters: data_models.UserUpdate):
     if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
 

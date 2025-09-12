@@ -1,53 +1,37 @@
-import json
-import sqlite3
+import jwt
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer
+from functools import wraps
+from uuid import UUID
 
-import database.rooms as rooms
-import database.sqlite_wrapper as sql
-import utilities.cryptography as cryptography
+import database.users as users
+import api.endpoints.oauth2 as oauth2
 
-def access_to_conversation(username, uuid, private_key):
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/oauth2")
+
+def verify_hash(uuid, hash): #Should be fixed
     try:
-        users = cryptography.aes_decrypt(cursor.execute("SELECT users FROM conversations WHERE uuid = ?", (uuid)).fetchone()[0], private_key).split(",")
-    except sqlite3.OperationalError:
+        return UUID(hex=users.private(uuid, hash)["discriminator"]).version == 7
+    except Exception:
+        return False
+
+async def authenticate(token: str = Depends(oauth2_scheme)):
+    try:
+        jwt.decode(token, oauth2.secret, algorithms=["HS256"]).get("sub")
+    except Exception:
         return False
     else:
-        return username in users
-
-def access_to_channel(username, uuid, private_key): #WILL USE PERMISSIONS
-    return True #Temporary
-
-def access_to_room(username, uuid, private_key):
-    if username in rooms.members(uuid, private_key):
         return True
-    else:
-        return False
 
-def fetch_from_db(table, where, value, column="*"):
-    try:
-        data = cursor.execute("SELECT ? FROM ? WHERE ? = ?", (column, table, where, value)).fetchone()
-    except sqlite3.OperationalError:
-        return None
-    else:
-        return data
+#Decorator factory
+def oauth2_post(router: APIRouter, path: str, **kwargs):
+    def decorator(function):
+        @router.post(path, **kwargs)
+        @wraps(function)
+        async def wrapper(authentication = Depends(authenticate), **kwargs):
+            return await function(authentication, **kwargs)
+        return wrapper
+    return decorator
 
-def verify_hash(username, hash): #MY MODEL WILL BE APPLIED HERE
-    try:
-        json.loads(cryptography.aes_decrypt(cursor.execute("SELECT key_chain FROM users WHERE username = ?", (username,)).fetchone()[0], hash))
-    except Exception:
-        return False
-
-def verify_passcode(uuid, passcode):
-    try:
-        result = cryptography.aes_decrypt(cursor.execute("SELECT result FROM invites WHERE uuid = ?", (uuid,)).fetchone()[0], passcode)
-    except Exception:
-        return False
-    else:
-        return result.isascii() and len(result) == 3
-
-def verify_private_key(uuid, private_key):
-    try:
-        title = cryptography.rsa_decrypt(cursor.execute("SELECT title FROM rooms WHERE uuid = ?", (uuid,)).fetchone()[0], private_key)
-    except Exception:
-        return False
-    else:
-        return title.isascii()
+#def permission(): -> Bitwise permissions model…
+#def verify_private_key(uuid, private_key): -> JSON checking model…
