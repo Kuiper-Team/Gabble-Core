@@ -1,6 +1,6 @@
 #A .env file containing an environmental variable for JWT secret key, labelled SECRET, must be created in this directory.
-import json
-from fastapi import APIRouter
+import jwt
+from fastapi import APIRouter, Depends
 
 import api.controls as controls
 import api.data_models as data_models
@@ -11,32 +11,27 @@ import utilities.cryptography as cryptography
 
 router = APIRouter()
 
-@router.post("/users") #WILL BE UPDATED
-async def r_users(parameters: data_models.HashCredentials):
-    if not users.exists(parameters.username): return presets.nouser
-    access = controls.verify_hash(parameters.username, parameters.hash)
-
+@router.post("/users")
+async def r_users(parameters: data_models.User, token: str = Depends(controls.oauth2_scheme)):
+    if not users.exists(parameters.uuid): return presets.nouser
+    access_token = await controls.authenticate(token)
+    request_uuid = access_token[1]
     try:
-        data = sql.select(users.table, "username", parameters.username, exception="nouser")[0]
+        data = sql.select(users.table, "uuid", parameters.uuid, exception="nouser")
     except Exception as code:
         return presets.auto(code)
 
-    if access:
+    if parameters.uuid == request_uuid:
         return {
             "success": True,
             "data": {
                 "public": {
-                    "username": parameters.username,
-                    "display_name": data[1],
-                    "biography": data[6],
-                    "request_hash": data[7]
+                    "username": data[0],
+                    "uuid": parameters.uuid,
+                    "biography": data[3],
+                    "request_hash": data[4]
                 },
-                "private": {
-                    "settings": cryptography.aes_decrypt(data[2], parameters.hash),
-                    "room_settings": cryptography.aes_decrypt(data[3], parameters.hash),
-                    "channel_settings": cryptography.aes_decrypt(data[4], parameters.hash),
-                    "key_chain": json.dumps(cryptography.aes_decrypt(data[9], parameters.hash))
-                }
+                "private": users.private(parameters.uuid, hash) #How can the server know the hash?
             },
         }
     else:
@@ -44,10 +39,10 @@ async def r_users(parameters: data_models.HashCredentials):
             "success": True,
             "data": {
                 "public": {
-                    "username": parameters.username,
-                    "display_name": data[1],
-                    "biography": data[6],
-                    "request_hash": data[7]
+                    "username": data[0],
+                    "uuid": parameters.uuid,
+                    "biography": data[3],
+                    "request_hash": data[4]
                 }
             },
         }
@@ -68,9 +63,8 @@ async def users_create(parameters: data_models.BasicCredentials):
             }
 
 @router.post("/users/delete") #WILL BE UPDATED
-async def users_delete(parameters: data_models.HashCredentials):
+async def users_delete(parameters: data_models.User):
     if not users.exists(parameters.username): return presets.nouser
-    if not controls.verify_hash(parameters.username, parameters.hash): return presets.incorrecthash
 
     try:
         users.delete(parameters.username, parameters.hash)

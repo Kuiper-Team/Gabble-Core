@@ -15,88 +15,73 @@ class BasicCredentials(BaseModel):
     username: str = label
     password: str = password
 
-class HashCredentials(BaseModel):
-    username: str = label
-    hash: str = base64
+class User(BaseModel):
+    uuid: str = uuid_hex
 
 class UserUpdate(BaseModel):
-    hash_credentials: HashCredentials
     display_name: ClassVar[str] = None
     channel_settings: ClassVar[str] = None
     settings: ClassVar[str] = None
     room_settings: ClassVar[str] = None
 
 class Room(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
 
 class TitleRoom(BaseModel):
-    hash_credentials: HashCredentials
     title: str = label
     private_key: str = private_key
 
 class UUIDRoom(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     private_key: str = private_key
 
 class RoomUpdate(BaseModel):
-    hash_credentials: HashCredentials
     uuid_room: UUIDRoom
     settings: ClassVar[str] = None
     permissions: ClassVar[str] = None
 
 class Member(BaseModel):
-    hash_credentials: HashCredentials
     uuid_room: UUIDRoom
     member: str = label
 
 class BanMember(BaseModel):
-    hash_credentials: HashCredentials
     member: Member
     expiry_day: ClassVar[int] = None
     expiry_month: ClassVar[int] = None
     expiry_year: ClassVar[int] = None
 
 class Channel(BaseModel):
-    hash_credentials: HashCredentials
     username: str = label
     uuid: str = uuid_hex
     private_key: str = private_key
 
 class ChannelCreate(BaseModel):
-    hash_credentials: HashCredentials
     title: str = label
     room_uuid: str = uuid_hex
     voice_channel: bool
     public_key: str = public_key
 
 class ChannelDelete(BaseModel):
-    hash_credentials: HashCredentials
     channel_model: Channel
     public_key: str = public_key
     room_uuid: str = uuid_hex
 
 class ChannelUpdate(BaseModel):
-    hash_credentials: HashCredentials
     channel_model: Channel
     settings: ClassVar[str] = None
     permissions: ClassVar[str] = None
 
 class MessageCreate(BaseModel):
-    hash_credentials: HashCredentials
     body: str = body
     channel_uuid: str = uuid_hex
     private_key: str = private_key
     public_key: str = public_key
 
 class MessageDelete(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     private_key: str = private_key
 
 class MessageEdit(BaseModel):
-    hash_credentials: HashCredentials
     body: str = body
     uuid: str = uuid_hex
     channel_uuid: str = uuid_hex
@@ -104,18 +89,15 @@ class MessageEdit(BaseModel):
     public_key: str = public_key
 
 class Invite(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     passcode: str = password
 
 class InviteAccept(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     passcode: str = password
     private_key: str = private_key
 
 class InviteCreate(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     passcode: str = password
     type: str = invite_type
@@ -124,18 +106,15 @@ class InviteCreate(BaseModel):
     room_uuid: ClassVar[None] = None
 
 class InviteDecline(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     passcode: str = password
     type: str = invite_type
 
 class Conversation(BaseModel):
-    hash_credentials: HashCredentials
     uuid: str = uuid_hex
     private_key: str = private_key
 
 class ConversationCreate(BaseModel):
-    hash_credentials: HashCredentials
     target: str = label
 
 class OAuth2(BaseModel):
