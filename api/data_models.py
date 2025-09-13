@@ -1,18 +1,15 @@
-from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 from typing import ClassVar
 
 body = Field(min_length=1, max_length=10000)
-base64 = Field(min_length=1, pattern="^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
+base64 = Field(min_length=1, pattern=r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
+expiry = Field(ge=1, le=525600)
 invite_type = Field(max_length=1, pattern=r"(f|r)")
-label = Field(min_length=3, max_length=36, pattern=r"[^,]+")
+label = Field(min_length=3, max_length=36)
 password = Field(min_length=12, max_length=72, pattern=r"^[\x00-\x7F]*$")
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 uuid_hex = Field(min_length=32, max_length=32, pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
-
-class Username(BaseModel):
-    username: str = label
 
 class BasicCredentials(BaseModel):
     username: str = label
@@ -143,9 +140,5 @@ class ConversationCreate(BaseModel):
 
 class OAuth2(BaseModel):
     uuid: str = label
-    hash: str = base64
-    expiry_minutes: int
-
-class OAuth2ID(BaseModel):
-    uuid: str = label
-    hash: str = base64
+    password: str = password
+    expiry_minutes: int = expiry

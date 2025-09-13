@@ -49,7 +49,7 @@ incorrectpassword = responses.JSONResponse(
     headers={"WWW-Authenticate": "Bearer"},
     content={
         "success": False,
-        "error": "incorrectcredentials"
+        "error": "incorrectpassword"
     }
 )
 incorrecthash = responses.JSONResponse(

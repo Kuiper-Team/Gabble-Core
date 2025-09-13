@@ -24,13 +24,13 @@ sql.table(table,
 
 def create(username, password):
     hash, salt = cryptography.argon2_hash(password)
-    print(hash, salt) #DEBUGGING
+    salt = b64encode(salt).decode()
     uuid = uuid_v7().hex
     sql.insert(table,
         (
             username,
             uuid,
-            b64encode(salt).decode(),
+            salt,
             "",
             sha256(uuid.encode()).hexdigest(),
             cryptography.aes_encrypt(json.dumps(
@@ -54,7 +54,7 @@ def create(username, password):
         exception="couldnotperform"
     )
 
-    return uuid, salt, hash.hex()
+    return uuid, salt
 
 def delete(uuid, hash):
     key_chain = private(uuid, hash)["key_chain"]
@@ -105,6 +105,6 @@ def delete_from_inbox(username, hash, label):
     pass
 
 def private(uuid, hash) -> dict:
-    data = cryptography.aes_decrypt(sql.select(table, "uuid", uuid, exception="nouser")[0], hash)
+    data = cryptography.aes_decrypt(sql.select(table, "uuid", uuid, column="private", exception="nouser")[0], hash)
 
     return json.loads(data)

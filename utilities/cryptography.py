@@ -31,7 +31,7 @@ def aes_encrypt(text, hash: bytes or str):
     return b64encode(cipher.iv + ciphertext_b).decode()
 
 def aes_decrypt(ciphertext, hash):
-    hash_b = bytes.fromhex(hash)
+    hash_b = bytes.fromhex(hash) if not isinstance(hash, bytes) else hash
 
     decoded = b64decode(ciphertext)
     encrypted = decoded[16:]

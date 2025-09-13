@@ -55,7 +55,7 @@ async def r_users(parameters: data_models.HashCredentials):
 @router.post("/users/create")
 async def users_create(parameters: data_models.BasicCredentials):
     try:
-        uuid, key = users.create(parameters.username, parameters.password)
+        uuid, salt = users.create(parameters.username, parameters.password)
     except Exception as code:
         return presets.auto(code)
     else:
@@ -63,7 +63,7 @@ async def users_create(parameters: data_models.BasicCredentials):
                 "success": True,
                 "user": {
                     "uuid": uuid,
-                    "key": key
+                    "salt_b64": salt
                 }
             }
 
