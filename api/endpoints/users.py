@@ -1,5 +1,4 @@
 #A .env file containing an environmental variable for JWT secret key, labelled SECRET, must be created in this directory.
-import jwt
 from fastapi import APIRouter, Depends
 
 import api.controls as controls
@@ -31,7 +30,7 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
                     "biography": data[3],
                     "request_hash": data[4]
                 },
-                "private": users.private(parameters.uuid, hash) #How can the server know the hash?
+                "private": data[5] #The client receives it encrypted, then decrypts from the stored hash.
             },
         }
     else:
