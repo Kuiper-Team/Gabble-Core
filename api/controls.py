@@ -21,7 +21,7 @@ def verify_password(uuid, password):
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> tuple[bool, str]:
     try:
-        sub = jwt.decode(token, oauth2.secret, algorithms=["HS256"]).get("sub")
+        sub = jwt.decode(token, oauth2.secret, algorithms=oauth2.algorithms).get("sub")
     except Exception:
         return False, ""
     else:

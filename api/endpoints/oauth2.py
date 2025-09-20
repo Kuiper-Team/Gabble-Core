@@ -13,6 +13,7 @@ import utilities.cryptography as cryptography
 
 load_dotenv()
 secret = getenv("OAUTH2_SECRET")
+algorithms = ["HS256"]
 
 router = APIRouter()
 
@@ -20,12 +21,12 @@ router = APIRouter()
 
 @router.post("/oauth2")
 async def r_oauth2(parameters: data_models.OAuth2):
-    if not users.exists(parameters.uuid): return presets.nouser
-    if not controls.verify_password(parameters.uuid, parameters.password): return presets.incorrectpassword
+    if not users.exists(parameters.user_id): return presets.nouser
+    if not controls.verify_password(parameters.user_id, parameters.password): return presets.incorrectpassword
 
     return {
         "access_token": cryptography.jwt_access_token(
-            {"sub": parameters.uuid},
+            {"sub": parameters.user_id},
             timedelta(minutes=parameters.expiry_minutes),
             secret
         ),
