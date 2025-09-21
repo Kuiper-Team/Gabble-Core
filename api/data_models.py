@@ -1,16 +1,18 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from pydantic import Field
-from typing import Optional
 
-argon2_hash_hex = Field(pattern=r"^[0-9a-fA-F]{32}$")
+ascii_r = r"^[\x00-\x7F]*$"
+hash_hex_r = r"^[0-9a-fA-F]{32}$"
+label_lengths = (3, 36)
+
+argon2_hash_hex = Field(pattern=hash_hex_r)
 argon2_hash_hex_optional = Field(pattern=r"^[0-9a-fA-F]{32}$", default=None)
 body = Field(min_length=1, max_length=10000)
 base64 = Field(min_length=1, pattern=r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
 expiry = Field(ge=1, le=525600)
 invite_type = Field(max_length=1, pattern=r"(f|r)")
-label = Field(min_length=3, max_length=36, pattern=r"^[\x00-\x7F]*$") #ASCII
-password = Field(min_length=12, max_length=72, pattern=r"^[\x00-\x7F]*$") #ASCII
+label = Field(min_length=label_lengths[0], max_length=label_lengths[1], pattern=ascii_r) #ASCII
+password = Field(min_length=12, max_length=72, pattern=ascii_r) #ASCII
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
 uuid_hex = Field(pattern=r"^[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}$")
@@ -27,13 +29,14 @@ class UserDelete(BaseModel):
     hash_hex: str = argon2_hash_hex
     
 class UserUpdate(BaseModel):
-    hash_hex: Optional[str] = Field(default=None, pattern=r"^[0-9a-fA-F]{32}$")
-    display_name: Optional[str] = Field(default=None, min_length=3, max_length=36, pattern=r"^[\x00-\x7F]*$")
-    biography: Optional[str] = Field(default=None, max_length=1000)
+    hash_hex: Optional[str] = Field(default=None, pattern=hash_hex_r)
+    display_name: Optional[str] = Field(default=None, min_length=label_lengths[0], max_length=label_lengths[1], pattern=ascii_r)
+    biography: Optional[str] = Field(default=None, max_length=4000)
     preferences: Optional[str] = Field(default=None)
     preferences_channels: Optional[str] = Field(default=None)
     preferences_conversations: Optional[str] = Field(default=None)
     preferences_rooms: Optional[str] = Field(default=None)
+
 class Room(BaseModel):
     uuid: str = uuid_hex
 
