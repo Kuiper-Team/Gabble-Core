@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from pydantic import Field
+from typing import Optional
 
 argon2_hash_hex = Field(pattern=r"^[0-9a-fA-F]{32}$")
 argon2_hash_hex_optional = Field(pattern=r"^[0-9a-fA-F]{32}$", default=None)
@@ -23,16 +25,15 @@ class User(BaseModel):
 class UserDelete(BaseModel):
     user_id: str = label
     hash_hex: str = argon2_hash_hex
-
-class UserUpdate(BaseModel): #Needs fix: Optional values which use fields
-    hash_hex: Optional[str]
-    display_name: Optional[str]
-    biography: Optional[str]
-    preferences: Optional[str]
-    preferences_channels: Optional[str]
-    preferences_conversations: Optional[str]
-    preferences_rooms: Optional[str]
-
+    
+class UserUpdate(BaseModel):
+    hash_hex: Optional[str] = Field(default=None, pattern=r"^[0-9a-fA-F]{32}$")
+    display_name: Optional[str] = Field(default=None, min_length=3, max_length=36, pattern=r"^[\x00-\x7F]*$")
+    biography: Optional[str] = Field(default=None, max_length=1000)
+    preferences: Optional[str] = Field(default=None)
+    preferences_channels: Optional[str] = Field(default=None)
+    preferences_conversations: Optional[str] = Field(default=None)
+    preferences_rooms: Optional[str] = Field(default=None)
 class Room(BaseModel):
     uuid: str = uuid_hex
 
