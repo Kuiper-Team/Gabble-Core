@@ -28,7 +28,7 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
             "success": True,
             "data": {
                 "public": {
-                    "display_name": b64decode(data[1]).decode(),
+                    "display_name": b64decode(data[1].encode("ascii")).decode(),
                     "user_id": parameters.user_id,
                     "biography": data[3],
                     "request_hash": data[4]
@@ -41,7 +41,7 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
             "success": True,
             "data": {
                 "public": {
-                    "display_name": b64decode(data[1]).decode(),
+                    "display_name": b64decode(data[1].encode("ascii")).decode(),
                     "user_id": parameters.uuid,
                     "biography": data[3],
                     "request_hash": data[4]
