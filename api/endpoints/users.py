@@ -1,5 +1,6 @@
 #A .env file containing an environmental variable for JWT secret key, labelled SECRET, must be created in this directory.
 import jwt
+from base64 import b64decode
 from fastapi import APIRouter, Depends
 
 import api.controls as controls
@@ -27,12 +28,12 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
             "success": True,
             "data": {
                 "public": {
-                    "username": data[0],
-                    "uuid": parameters.user_id,
+                    "display_name": b64decode(data[1]),
+                    "user_id": parameters.user_id,
                     "biography": data[3],
                     "request_hash": data[4]
                 },
-                "private": data[5] #The client receives it encrypted, then decrypts from the stored hash.
+                "private": data[5] #The client receives it encrypted, then decrypts from the client-stored hash.
             },
         }
     else:
@@ -40,8 +41,8 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
             "success": True,
             "data": {
                 "public": {
-                    "username": data[0],
-                    "uuid": parameters.uuid,
+                    "display_name": b64decode(data[1]),
+                    "user_id": parameters.uuid,
                     "biography": data[3],
                     "request_hash": data[4]
                 }
