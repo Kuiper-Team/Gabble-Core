@@ -1,9 +1,8 @@
-import pyargon2
-
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
 import database.users as users
 import utilities.cryptography as cryptography
+from hashlib import sha256
 from uuid import uuid4
 
 table = "invites"
@@ -11,49 +10,51 @@ table = "invites"
 sql.table(table,
     (
         sql.C("uuid", sql.Types.TEXT, not_null=True),
-        sql.C("inviter", sql.Types.TEXT, not_null=True),
-        sql.C("expiry", sql.Types.INTEGER, not_null=True),
-        sql.C("result", sql.Types.TEXT, not_null=True),
+        sql.C("action", sql.Types.TEXT, not_null=True),
+        sql.C("expiry", sql.Types.INTEGER, not_null=True)
     ),
     primary_key="uuid"
 )
 
-def create(inviter, expiry, result, passcode):
-    request_hash = sql.select("users", "username", inviter, column="request_hash", exception="nouser")[0]
-    hash = cryptography.argon2_hash(request_hash, custom_salt=passcode)
-
+def create(action_type: int, action_whitelist: tuple[str], action_blacklist: tuple[str], key: tuple[str], expiry, passcode):
     sql.insert(table, (
             uuid4().hex,
-            inviter,
-            cryptography.aes_encrypt(expiry, hash)
+            cryptography.aes_encrypt(
+                {
+                    "type": action_type,
+                    "whitelist": action_whitelist,
+                    "blacklist": action_blacklist,
+                    "parameters": []
+                },
+                sha256(passcode.encode()).digest()
+            ),
+            expiry,
         ),
         exception="couldntinsert"
     )
 
-    return hash
+#Types:
+#0: Connection requests
+#1: Room invites
+def accept(user_id, uuid, passcode):
+    action = get_action(uuid, passcode)
+    type = action[0]
+    parameters = action[3]
 
-def withdraw(uuid):
-    sql.delete(table, "uuid", uuid, exception="norequest")
-
-#Options for "type":
-#f: Friend request
-#r: Room invite
-def accept(uuid, passcode, room_private_key=None):
-    inviter = sql.select(table, "uuid", uuid, column="inviter", exception="noinvite")[0]
-    result = get_result(uuid, inviter, passcode)
-
-    if result[0] == "f": #f,username1,username2
-        users.add_friends(result[1], result[2])
-    elif result[0] == "r" and room_private_key: #r,uuid,username
-        rooms.add_member(result[2], result[1], room_private_key)
+    if type == 0: #parameters: [user_1, user_2]
+        if not user_id == parameters[1] or user_id == parameters[0]: raise Exception("notinvitee")
+        users.add_connection(parameters[0], parameters[1])
+    elif type == 1: #parameters: [uuid, private_key]
+        rooms.add_member(user_id, parameters[0], parameters[1])
     else:
         raise Exception("invalidformat")
 
-    withdraw(uuid)
+def get_action(uuid, passcode):
+    action = cryptography.aes_decrypt(sql.select(table, "uuid", uuid, column="action", exception="noinvite")[0], sha256(passcode.encode()).digest())
 
-def get_result(uuid, passcode):
-    inviter = sql.select(table, "uuid", uuid, column="inviter", exception="noinvite")[0]
-    return cryptography.aes_decrypt(
-        sql.select(table, "uuid", uuid, column="result", exception="noinvite")[0],
-        pyargon2.hash(sql.select("users", "username", inviter, column="request_hash")[0], passcode)
-    ).split(",")
+    return {
+        "type": action[0],
+        "whitelist": action[1],
+        "blacklist": action[2],
+        "parameters": action[3]
+    }

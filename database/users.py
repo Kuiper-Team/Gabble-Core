@@ -16,7 +16,6 @@ sql.table(table,
         sql.C("display_name", sql.Types.TEXT, not_null=True),
         sql.C("salt_b64", sql.Types.TEXT, not_null=True),
         sql.C("biography", sql.Types.TEXT, not_null=True),
-        sql.C("request_hash", sql.Types.TEXT, not_null=True),
         sql.C("private", sql.Types.TEXT, not_null=True)
     ),
     primary_key="user_id"
