@@ -23,6 +23,13 @@ alreadyamember = responses.JSONResponse(
         "error": "alreadyamember"
     }
 )
+alreadyexists = responses.JSONResponse(
+    status_code=401,
+    content={
+        "success": False,
+        "error": "alreadyexists"
+    }
+)
 alreadyfriends = responses.JSONResponse(
     status_code=401,
     content={
@@ -106,6 +113,13 @@ noconversation = responses.JSONResponse(
     content={
         "success": False,
         "error": "noconversation"
+    }
+)
+noinvite = responses.JSONResponse(
+    status_code=404,
+    content={
+        "success": False,
+        "error": "noinvite"
     }
 )
 nomember = responses.JSONResponse(

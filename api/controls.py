@@ -2,6 +2,7 @@ import jwt
 from base64 import b64decode
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
 from uuid import UUID
 
 import api.endpoints.oauth2 as oauth2
@@ -26,6 +27,15 @@ async def authenticate(token: str = Depends(oauth2_scheme)) -> tuple[bool, str]:
         return False, ""
     else:
         return True, sub
+
+
+def verify_model(data, model: type[BaseModel]):
+    try:
+        model.model_validate(data)
+    except Exception:
+        return False
+    else:
+        return True
 
 #def permission(): -> Bitwise permissions model…
 #def verify_private_key(uuid, private_key): -> JSON checking model…

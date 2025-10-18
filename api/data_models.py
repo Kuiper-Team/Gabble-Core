@@ -10,7 +10,7 @@ argon2_hash_hex_optional = Field(pattern=r"^[0-9a-fA-F]{32}$", default=None)
 body = Field(min_length=1, max_length=10000)
 base64 = Field(min_length=1, pattern=r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
 expiry = Field(ge=1, le=525600)
-invite_type = Field(max_length=1, pattern=r"(f|r)")
+invite_type = Field(le=1)
 label = Field(min_length=label_lengths[0], max_length=label_lengths[1], pattern=ascii_r) #ASCII
 password = Field(min_length=12, max_length=72, pattern=ascii_r) #ASCII
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
@@ -108,20 +108,21 @@ class Invite(BaseModel):
 class InviteAccept(BaseModel):
     uuid: str = uuid_hex
     passcode: str = password
-    private_key: str = private_key
 
 class InviteCreate(BaseModel):
     uuid: str = uuid_hex
     passcode: str = password
     type: str = invite_type
     expiry: int = Field(ge=60, le=31556)
-    target: Optional[None] = None
-    room_uuid: Optional[None] = None
+    invite_parameters: Optional[list] = None
 
-class InviteDecline(BaseModel):
+class InviteParameters0(BaseModel):
+    from_user_id: str = label
+    to_user_id: str = label
+
+class InviteParameters1(BaseModel):
     uuid: str = uuid_hex
-    passcode: str = password
-    type: str = invite_type
+    private_key: str = private_key
 
 class Conversation(BaseModel):
     uuid: str = uuid_hex

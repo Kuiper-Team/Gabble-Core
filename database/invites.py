@@ -1,9 +1,11 @@
+from hashlib import sha256
+import json
+from uuid import uuid4
+
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
 import database.users as users
 import utilities.cryptography as cryptography
-from hashlib import sha256
-from uuid import uuid4
 
 table = "invites"
 
@@ -33,6 +35,22 @@ def create(action_type: int, action_whitelist: tuple[str], action_blacklist: tup
         exception="couldntinsert"
     )
 
+def exists(uuid):
+    try:
+        sql.select(table, "uuid", uuid)
+    except Exception:
+        return False
+    else:
+        return True
+
+def verify_passcode(uuid, passcode):
+    try:
+        cryptography.aes_decrypt(sql.select(table, "uuid", uuid, column="action", exception="noinvite")[0], sha256(passcode.encode()).digest())
+    except Exception:
+        return False
+    else:
+        return True
+
 #Types:
 #0: Connection requests
 #1: Room invites
@@ -50,7 +68,7 @@ def accept(user_id, uuid, passcode):
         raise Exception("invalidformat")
 
 def get_action(uuid, passcode):
-    action = cryptography.aes_decrypt(sql.select(table, "uuid", uuid, column="action", exception="noinvite")[0], sha256(passcode.encode()).digest())
+    action = json.cryptography.aes_decrypt(sql.select(table, "uuid", uuid, column="action", exception="noinvite")[0], sha256(passcode.encode()).digest())
 
     return {
         "type": action[0],
