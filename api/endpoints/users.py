@@ -23,7 +23,6 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
     except Exception as code:
         return presets.auto(code)
 
-    print(data)
     if parameters.user_id == access_token[1]:
         return {
             "success": True,
