@@ -1,7 +1,7 @@
 #This script is dedicated to room and channel permissions. The system uses bitwise permissions.
 from enum import Enum
 
-#Note: Each attribute has a ".name" and ".value".
+#Note that each attribute has a ".name" and ".value".
 class Read(Enum):
     channels = 0b1
     past_messages = 0b10
