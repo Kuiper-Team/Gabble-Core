@@ -19,10 +19,11 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
 
     access_token = await controls.authenticate(token)
     try:
-        data = sql.select(users.table, "uuid", parameters.user_id, exception="nouser")
+        data = sql.select(users.table, "user_id", parameters.user_id, exception="nouser")
     except Exception as code:
         return presets.auto(code)
 
+    print(data)
     if parameters.user_id == access_token[1]:
         return {
             "success": True,
@@ -32,7 +33,7 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
                     "user_id": parameters.user_id,
                     "biography": data[3]
                 },
-                "private": data[5] #The client receives it encrypted, then decrypts from the client-stored hash.
+                "private": data[4] #The client receives it encrypted, then decrypts from the client-stored hash.
             },
         }
     else:
@@ -41,7 +42,7 @@ async def r_users(parameters: data_models.User, token: str = Depends(controls.oa
             "data": {
                 "public": {
                     "display_name": b64decode(data[1].encode("ascii")).decode(),
-                    "user_id": parameters.uuid,
+                    "user_id": parameters.user_id,
                     "biography": data[3]
                 }
             },

@@ -13,7 +13,7 @@ import utilities.cryptography as cryptography
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/oauth2")
 
 def verify_password(uuid, password):
-    salt = b64decode(sql.select("users", "uuid", uuid, column="salt_b64", exception="nouser")[0])
+    salt = b64decode(sql.select("users", "user_id", uuid, column="salt_b64", exception="nouser")[0])
     hash = cryptography.argon2_hash(password, custom_salt=salt)[0].hex()
     try:
         return UUID(hex=users.private(uuid, hash)["discriminator"]).version == 7
@@ -38,4 +38,4 @@ def verify_model(data, model: type[BaseModel]):
         return True
 
 #def permission(): -> Bitwise permissions model…
-#def verify_private_key(uuid, private_key): -> JSON checking model…
+#def verify_private_key(uuid, private_key): -> JSON checking model for rooms and conversations…

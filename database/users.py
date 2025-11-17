@@ -30,14 +30,13 @@ def create(user_id, password):
             b64encode(user_id.encode()).decode(),
             salt,
             "",
-            sha256(user_id.encode()).hexdigest(),
             cryptography.aes_encrypt(json.dumps(
                 {
                     "discriminator": uuid_v7().hex, #This works as a unique salt to prevent attacks and has no other use.
                     "settings": {
                         #User preferences
                         "preferences_channels": {
-                            # Channel-specific preferences
+                            #Channel-specific preferences
                         },
                         "preferences_conversations": {
                             # Conversation-specific preferences

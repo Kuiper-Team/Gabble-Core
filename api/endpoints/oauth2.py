@@ -17,8 +17,6 @@ algorithms = ["HS256"]
 
 router = APIRouter()
 
-#Additional JWT data "hash" to supply a lot of endpoints with an AES key?
-
 @router.post("/oauth2")
 async def r_oauth2(parameters: data_models.OAuth2):
     if not users.exists(parameters.user_id): return presets.nouser
