@@ -27,7 +27,7 @@ def create(user_id, password):
     sql.insert(table,
         (
             user_id,
-            b64encode(user_id),
+            b64encode(user_id.encode()).decode(),
             salt,
             "",
             sha256(user_id.encode()).hexdigest(),
