@@ -1,35 +1,16 @@
-#FastAPI has its own WebSocket decorators.
-import asyncio
-import os
-import websockets
-from sys import path
+from fastapi import WebSocket
 
-path.append("..")
+from app import api
 
-import utilities.log as log
-from utilities.check_port import check_port
+#Ideas:
+#1. Check if a client is active by sending regular messages and let the client respond, and if it doesn't, change user's status as inactive.
+#2. Basic commands to handle some user requests faster than HTTP requests.
 
-script_name = os.path.basename(__file__)
-host = "0.0.0.0"
-port = 80
+#Just a starter code for WebSockets.
+@api.websocket("/adapter")
+async def adapter(connection: WebSocket):
+    await connection.accept()
+    while True:
+        received = await connection.receive_text()
 
-async def stream(ws):
-    session_uuid = await ws.recv()
-    #There are going to be some controls and nested commands alongside "await ws.send()" lines.
-
-async def serve():
-    async with websockets.serve(stream, host, port):
-        await asyncio.Future()
-
-if check_port(host, port):
-    try:
-        log.success("The server {} is up on ws://{}:{}.".format(script_name, host, port))
-        asyncio.run(serve())
-    except KeyboardInterrupt:
-        pass
-    except BaseException as error:
-        log.failure(str(error))
-        exit(1)
-else:
-    log.failure("The port {} is busy for the websocket server {}.".format(port, script_name))
-    exit(1)
+        await connection.send_text(received)
