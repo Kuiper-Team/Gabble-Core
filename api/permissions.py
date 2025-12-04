@@ -1,9 +1,6 @@
-#This script is dedicated to room and channel permissions. The system uses bitwise permissions.
-from enum import Enum
-
 from configuration import permissions
 
-export = {}
+export = {} #Usage: export["permission/code"]
 
 def initialize():
     index = 0
@@ -14,5 +11,5 @@ def initialize():
             }
         )
 
-def check(permissions, mask: int): #mask example: Read.channels
+def check(permissions, mask: int):
     return False if permissions & mask == 0 else True

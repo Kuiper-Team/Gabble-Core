@@ -2,17 +2,17 @@ from fastapi import APIRouter
 
 import api.controls as controls
 import api.data_models as data_models
-import api.permissions
 import api.presets as presets
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
 import utilities.cryptography as cryptography
+from api.permissions import export as permissions
 
 router = APIRouter()
 
 @router.post("/rooms")
 async def r_rooms(parameters: data_models.Room):
-
+    permissions
 
     access = rooms.has_permissions(parameters.uuid, parameters.hash_credentials.username, ("access_to_settings", "access_to_permissions"), parameters.private_key)
     try:
