@@ -1,6 +1,7 @@
 import pydantic
 from fastapi import FastAPI, HTTPException, Request, responses
 
+import api.permissions as permissions
 import api.presets as presets
 from api.endpoints import home, channels, conversations, invites, messages, oauth2, rooms, users
 
@@ -85,6 +86,8 @@ async def validation_error(request: Request, exception: pydantic.ValidationError
         status_code=422,
         content=presets.invalidformat
     )
+
+permissions.initialize()
 
 api.include_router(home.router)
 api.include_router(channels.router)

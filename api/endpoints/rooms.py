@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 import api.controls as controls
 import api.data_models as data_models
+import api.permissions
 import api.presets as presets
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
@@ -11,8 +12,7 @@ router = APIRouter()
 
 @router.post("/rooms")
 async def r_rooms(parameters: data_models.Room):
-    if not controls.verify_hash(parameters.hash_credentials.username, parameters.hash_credentials.hash): return presets.incorrecthash
-    if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key): return presets.nopermission
+
 
     access = rooms.has_permissions(parameters.uuid, parameters.hash_credentials.username, ("access_to_settings", "access_to_permissions"), parameters.private_key)
     try:
