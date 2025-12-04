@@ -11,5 +11,5 @@ def initialize():
             }
         )
 
-def check(permissions, mask: int):
-    return False if permissions & mask == 0 else True
+def check(available_permissions, mask: int):
+    return False if available_permissions & mask == 0 else True
