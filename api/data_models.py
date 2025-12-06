@@ -6,7 +6,6 @@ hash_hex_r = r"^[0-9a-fA-F]{32}$"
 label_lengths = (3, 36)
 
 argon2_hash_hex = Field(pattern=hash_hex_r)
-argon2_hash_hex_optional = Field(pattern=r"^[0-9a-fA-F]{32}$", default=None)
 body = Field(min_length=1, max_length=10000)
 base64 = Field(min_length=1, pattern=r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
 expiry = Field(ge=1, le=525600)
@@ -39,6 +38,8 @@ class UserUpdate(BaseModel):
 
 class Room(BaseModel):
     uuid: str = uuid_hex
+    user_id: Optional[str] = Field(default=None, min_length=label_lengths[0], max_length=label_lengths[1], pattern=ascii_r) #ASCII
+    private_key: Optional[str] = Field(default=None, pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 
 class TitleRoom(BaseModel):
     title: str = label
@@ -46,6 +47,7 @@ class TitleRoom(BaseModel):
 
 class UUIDRoom(BaseModel):
     uuid: str = uuid_hex
+    user_id: str = label
     private_key: str = private_key
 
 class RoomUpdate(BaseModel):
@@ -58,6 +60,7 @@ class Member(BaseModel):
     member: str = label
 
 class BanMember(BaseModel):
+    uuid_room: UUIDRoom
     member: Member
     expiry_day: Optional[int] = None
     expiry_month: Optional[int] = None

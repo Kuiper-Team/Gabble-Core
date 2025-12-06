@@ -15,37 +15,27 @@ router = APIRouter()
 
 @router.post("/users")
 async def r_users(parameters: data_models.User, token: str = Depends(controls.oauth2_scheme)):
-    if not users.exists(parameters.user_id): return presets.nouser
-
     access_token = await controls.authenticate(token)
     try:
         data = sql.select(users.table, "user_id", parameters.user_id, exception="nouser")
     except Exception as code:
         return presets.auto(code)
 
+
+    result = {
+        "success": True,
+        "data": {
+            "public": {
+                "display_name": b64decode(data[1].encode("ascii")).decode(),
+                "user_id": parameters.user_id,
+                "biography": data[3]
+            }
+        },
+    }
     if parameters.user_id == access_token[1]:
-        return {
-            "success": True,
-            "data": {
-                "public": {
-                    "display_name": b64decode(data[1].encode("ascii")).decode(),
-                    "user_id": parameters.user_id,
-                    "biography": data[3]
-                },
-                "private": data[4] #The client receives it encrypted, then decrypts from the client-stored hash.
-            },
-        }
-    else:
-        return {
-            "success": True,
-            "data": {
-                "public": {
-                    "display_name": b64decode(data[1].encode("ascii")).decode(),
-                    "user_id": parameters.user_id,
-                    "biography": data[3]
-                }
-            },
-        }
+        result["data"]["private"] = data[4] #The client receives it encrypted, then decrypts from the stored hash.
+
+    return result
 
 @router.post("/users/create")
 async def users_create(parameters: data_models.BasicCredentials):

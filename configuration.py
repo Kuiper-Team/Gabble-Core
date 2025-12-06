@@ -8,10 +8,11 @@ permissions = (
     "read/past_messages",
 
     "write/channels",
+    "write/delete_room",
     "write/invites",
     "write/messages",
+    "write/permissions",
     "write/room",
-    "write/tags",
 
     "moderation/kick",
     "moderation/ban",
