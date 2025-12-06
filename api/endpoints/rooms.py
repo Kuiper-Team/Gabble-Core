@@ -2,17 +2,17 @@ from fastapi import APIRouter
 
 import api.controls as controls
 import api.data_models as data_models
+import api.permissions as permissions
 import api.presets as presets
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
 import utilities.cryptography as cryptography
-from api.permissions import export as permissions
 
 router = APIRouter()
 
 @router.post("/rooms")
 async def r_rooms(parameters: data_models.Room):
-    permissions
+    #permissions.check()
 
     access = rooms.has_permissions(parameters.uuid, parameters.hash_credentials.username, ("access_to_settings", "access_to_permissions"), parameters.private_key)
     try:
@@ -27,7 +27,7 @@ async def r_rooms(parameters: data_models.Room):
                 "uuid": parameters.uuid,
                 "title": data[0],
                 "public_key": data[2],
-                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "channels": rooms.channel_list(parameters.uuid, parameters.private_key),
                 "members": rooms.members(parameters.uuid, parameters.private_key),
                 "sensitive": {
                     "settings": cryptography.rsa_decrypt(data[5], parameters.private_key),
@@ -42,7 +42,7 @@ async def r_rooms(parameters: data_models.Room):
                 "uuid": parameters.uuid,
                 "title": data[0],
                 "public_key": data[2],
-                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "channels": rooms.channel_list(parameters.uuid, parameters.private_key),
                 "members": rooms.members(parameters.uuid, parameters.private_key),
                 "sensitive": {
                     "settings": cryptography.rsa_decrypt(data[5], parameters.private_key)
@@ -56,7 +56,7 @@ async def r_rooms(parameters: data_models.Room):
                 "uuid": parameters.uuid,
                 "title": data[0],
                 "public_key": data[2],
-                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "channels": rooms.channel_list(parameters.uuid, parameters.private_key),
                 "members": rooms.members(parameters.uuid, parameters.private_key),
                 "sensitive": {
                     "permissions": cryptography.rsa_decrypt(data[6], parameters.private_key)
@@ -70,7 +70,7 @@ async def r_rooms(parameters: data_models.Room):
                 "uuid": parameters.uuid,
                 "title": data[0],
                 "public_key": data[2],
-                "channels": rooms.channels(parameters.uuid, parameters.private_key),
+                "channels": rooms.channel_list(parameters.uuid, parameters.private_key),
                 "members": rooms.members(parameters.uuid, parameters.private_key)
             }
         }
@@ -100,13 +100,13 @@ async def rooms_delete(parameters: data_models.UUIDRoom):
     if not controls.access_to_room(parameters.hash_credentials.username, parameters.uuid, parameters.private_key) or not rooms.has_permissions(parameters.hash_credentials.username, parameters.uuid, ("delete_room",), parameters.private_key): return presets.nopermission
 
     try:
-        rooms.delete(parameters.uuid)
+        rooms.delete(parameters.uuid, parameters.private_key)
     except Exception as code:
         return presets.auto(code)
     else:
         return presets.success
 
-@router.post("/rooms/update")
+@router.post("/rooms/update") #Needs data validation
 async def rooms_update(parameters: data_models.RoomUpdate):
     if not controls.verify_hash(parameters.uuid_room.hash_credentials.username, parameters.uuid_room.hash_credentials.username): return presets.incorrecthash
     if not rooms.has_permissions(parameters.uuid_room.hash_credentials.username, parameters.uuid_room.uuid, ("update_settings",), parameters.uuid_room.private_key): return presets.nopermission

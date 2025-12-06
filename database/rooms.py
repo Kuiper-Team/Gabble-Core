@@ -1,7 +1,8 @@
 import json
-import sqlite3
 from datetime import datetime
 
+import configuration
+import database.channels as channels
 import database.sqlite_wrapper as sql
 import utilities.cryptography as cryptography
 import utilities.generation as generation
@@ -23,51 +24,53 @@ sql.table(table,
     primary_key="uuid"
 )
 
+blank_object = json.dumps({})
 default_settings = json.dumps(
     {
         "icon": 0
     }
 )
+default_permissions = { #This is a dict
+    "tags": {},
+    "members": {}
+}
 
-default_permissions = json.dumps(
-    {
-        "tags": {},
-        "members": {}
-    }
-)
-
-default_blacklist = json.dumps(
-    {}
-)
-
-def create(title, username):
+def create(title, user_id):
     key_pair = cryptography.rsa_generate_pair()
     public_key = key_pair[0]
     uuid = uuid_v7().hex
+
+    permissions = default_permissions.copy()
+    permissions["members"][user_id] = configuration.default_administrator_permissions
+
     sql.insert(table,
         (
             cryptography.rsa_encrypt(title, public_key),
             uuid,
             public_key,
-            None,
-            cryptography.rsa_encrypt(username, public_key),
+            cryptography.rsa_encrypt(blank_object, public_key),
+            cryptography.rsa_encrypt(user_id, public_key),
             cryptography.rsa_encrypt(default_settings, public_key),
-            cryptography.rsa_encrypt(default_permissions, public_key),
-            cryptography.rsa_encrypt(default_blacklist, public_key)
+            cryptography.rsa_encrypt(permissions, public_key),
+            cryptography.rsa_encrypt(blank_object, public_key)
         ),
         exception="roomexists"
     )
 
     return public_key, key_pair[1], uuid
 
-def delete(uuid):
+def delete(uuid, private_key):
     sql.delete(table, "uuid", uuid, exception="noroom")
+
+    deletion = channel_list(uuid, private_key)
+    for channel_uuid in deletion:
+        sql.delete(channels.table, "uuid", channel_uuid, safe=True)
 
 def update(uuid, settings=None, permissions=None):
     sql.update(table, "settings", settings, "uuid", uuid, settings, exception="noroom")
     sql.update(table, "permissions", permissions, "uuid", uuid, permissions, exception="noroom")
 
-def has_permissions(uuid, username, requested, private_key):
+def available_permissions(user_id, uuid, private_key):
     permissions = json.loads(
         cryptography.rsa_decrypt(
             sql.select(table, "uuid", uuid, column="permissions", safe=True)[0],
@@ -75,19 +78,17 @@ def has_permissions(uuid, username, requested, private_key):
         )
     )
 
-    result = []
-    for permission in requested:
-        result.append(permissions["members"][username][permission])
+    return permissions["users"][user_id]
 
-    return result
-
-def channels(uuid, private_key):
-    channels = cryptography.rsa_decrypt(
-        sql.select(table, "uuid", uuid, column="members", exception="noroom")[0],
-        private_key
+def channel_list(uuid, private_key):
+    channels_column = json.loads(
+        cryptography.rsa_decrypt(
+            sql.select(table, "uuid", uuid, column="channels", exception="noroom")[0],
+            private_key
+        )
     )
 
-    return channels.split(",") if channels is not None else []
+    return list(channels_column.keys())
 
 def public_key(uuid):
     key = sql.select(table, "uuid", uuid, column="public_key", exception="noroom")[0]
@@ -95,12 +96,12 @@ def public_key(uuid):
     return key
 
 def members(uuid, private_key):
-    members = cryptography.rsa_decrypt(
+    members_list = cryptography.rsa_decrypt(
         sql.select(table, "uuid", uuid, column="members", exception="noroom")[0],
         private_key
     )
 
-    return members.split(",")
+    return members_list.split(",")
 
 def add_member(new_member, uuid, private_key):
     members_list = members(uuid, private_key)
@@ -128,7 +129,7 @@ def kick_member(member, uuid, private_key):
         exception="noroom"
     )
 
-def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, expiry_year=None):
+def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, expiry_year=None): #Switch to UNIX timestamps?
     if not member in members(uuid, private_key):
         raise Exception("nomember")
 
@@ -142,7 +143,7 @@ def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, ex
         object.update({member: f"{expiry_day}-{expiry_month}-{expiry_year}" if expiry_day and expiry_month and expiry_year else 0})
     )
 
-    sql.update(table, "blacklist", new_data, "username", member, exception="noroom")
+    sql.update(table, "blacklist", new_data, "user_id", member, exception="noroom")
 
 def unban_member(): #To be done
     pass

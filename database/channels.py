@@ -2,7 +2,7 @@ import json
 
 import database.rooms as rooms
 import database.sqlite_wrapper as sql
-import utilities.generation as generation
+import utilities.cryptography as cryptography
 from utilities.uuidv7 import uuid_v7
 
 table = "channels"
@@ -24,20 +24,21 @@ default_settings = {
 }
 
 default_permissions = {
-    #
+    "tags": {},
+    "users": {}
 }
 
-def create(title, room_uuid, voice_channel, public_key):
+def create(title, room_uuid, type, public_key):
     #Type 0: Text channel
     #Type 1: Voice channel
     sql.insert(table,
        (
-           generation.rsa_encrypt(title, public_key),
+           cryptography.rsa_encrypt(title, public_key),
            uuid_v7().hex,
            room_uuid,
-           generation.rsa_encrypt("1" if voice_channel else "0", public_key),
-           generation.rsa_encrypt(default_settings, public_key),
-           generation.rsa_encrypt(default_permissions, public_key)
+           type,
+           cryptography.rsa_encrypt(default_settings, public_key),
+           cryptography.rsa_encrypt(default_permissions, public_key)
        ),
        exception="channelexists"
     )
@@ -45,8 +46,8 @@ def create(title, room_uuid, voice_channel, public_key):
 def delete(uuid, room_uuid, public_key, private_key):
     sql.delete(table, "uuid", uuid, exception="nochannel")
 
-    channels = rooms.channels(uuid, private_key)
-    sql.update(table, "channels", generation.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), "uuid", uuid, exception="noroom")
+    channels = rooms.channel_list(uuid, private_key)
+    sql.update(table, "channels", cryptography.rsa_encrypt(json.dumps(channels.pop(uuid)), public_key), "uuid", uuid, exception="noroom")
 
 def update(uuid, settings=None, permissions=None):
     sql.update(table, "settings", settings, "uuid", uuid, condition=settings, exception="nouser")

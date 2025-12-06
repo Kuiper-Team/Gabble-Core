@@ -20,3 +20,5 @@ permissions = (
     "voice/speak",
     "voice/video"
 )
+default_administrator_permissions = (1 << len(permissions)) - 1
+default_permissions = 0b110010000111 #This is configured manually!
