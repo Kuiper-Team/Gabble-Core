@@ -11,6 +11,7 @@ base64 = Field(min_length=1, pattern=r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}
 expiry = Field(ge=1, le=525600)
 invite_type = Field(le=1)
 label = Field(min_length=label_lengths[0], max_length=label_lengths[1], pattern=ascii_r) #ASCII
+optional_timestamp = Field(ge=-1) #-1 If none, else from 0 to infinity.
 password = Field(min_length=12, max_length=72, pattern=ascii_r) #ASCII
 private_key = Field(pattern=r"^-----BEGIN RSA PRIVATE KEY-----\s*.*\s*-----END RSA PRIVATE KEY-----$")
 public_key = Field(pattern=r"/-----BEGIN RSA PUBLIC KEY-----\n(.+?)\n-----END RSA PUBLIC KEY-----/s")
@@ -62,9 +63,11 @@ class Member(BaseModel):
 class BanMember(BaseModel):
     uuid_room: UUIDRoom
     member: Member
-    expiry_day: Optional[int] = None
-    expiry_month: Optional[int] = None
-    expiry_year: Optional[int] = None
+    expiry: int = optional_timestamp
+
+class UnbanMember(BaseModel):
+    uuid_room: UUIDRoom
+    member: Member
 
 class Channel(BaseModel):
     user_id: str = label

@@ -30,9 +30,9 @@ async def r_rooms(parameters: data_models.Room, token: str = Depends(controls.oa
         }
     }
     if parameters.user_id and parameters.private_key:
-        if permissions.check(rooms.available_permissions(parameters.user_id), permissions.mask["write/permissions"]):
+        if permissions.check(rooms.available_permissions(parameters.user_id, parameters.uuid, parameters.private_key), permissions.mask["write/permissions"]):
             result["data"]["private"]["permissions"] = cryptography.rsa_decrypt(data[6], parameters.private_key)
-        if permissions.check(rooms.available_permissions(parameters.user_id), permissions.mask["write/room"]):
+        if permissions.check(rooms.available_permissions(parameters.user_id, parameters.uuid, parameters.private_key), permissions.mask["write/room"]):
             result["data"]["private"]["settings"] = cryptography.rsa_decrypt(data[5], parameters.private_key)
 
     return result
@@ -110,10 +110,19 @@ async def rooms_members_ban(parameters: data_models.BanMember, token: str = Depe
     if not permissions.check(rooms.available_permissions(parameters.uuid_room.user_id, parameters.uuid_room.uuid, parameters.uuid_room.private_key), permissions.mask["moderation/ban"]): return presets.nopermission
 
     try:
-        rooms.ban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key, expiry_day=parameters.expiry_day, expiry_month=parameters.expiry_month, expiry_year=parameters.expiry_year)
+        rooms.ban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key, parameters.expiry)
     except Exception as code:
         return presets.auto(code)
     else:
         return presets.success
 
-#@router.post("/rooms/members/unban")
+@router.post("/rooms/members/unban")
+async def rooms_members_unban(parameters: data_models.UnbanMember, token: str = Depends(controls.oauth2_scheme)):
+    if not permissions.check(rooms.available_permissions(parameters.uuid_room.user_id, parameters.uuid_room.uuid, parameters.uuid_room.private_key), permissions.mask["moderation/ban"]): return presets.nopermission
+
+    try:
+        rooms.unban_member(parameters.member, parameters.uuid_room.uuid, parameters.uuid_room.private_key)
+    except Exception as code:
+        return presets.auto(code)
+    else:
+        return presets.success

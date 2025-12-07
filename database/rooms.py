@@ -129,7 +129,7 @@ def kick_member(member, uuid, private_key):
         exception="noroom"
     )
 
-def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, expiry_year=None): #Switch to UNIX timestamps?
+def ban_member(member, uuid, private_key, expiry):
     if not member in members(uuid, private_key):
         raise Exception("nomember")
 
@@ -139,14 +139,24 @@ def ban_member(member, uuid, private_key, expiry_day=None, expiry_month=None, ex
             private_key
         )
     )
-    new_data = json.dumps(
-        object.update({member: f"{expiry_day}-{expiry_month}-{expiry_year}" if expiry_day and expiry_month and expiry_year else 0})
+    object.update({member: expiry})
+
+    sql.update(table, "blacklist", cryptography.rsa_encrypt(object, public_key), "user_id", member, exception="noroom")
+
+def unban_member(member, uuid, private_key):
+    object = json.loads(
+        cryptography.rsa_decrypt(
+            sql.select(table, "uuid", uuid, column="blacklist", exception="noroom")[0],
+            private_key
+        )
     )
+    if member in object:
+        object.pop(member)
+    else:
+        raise Exception("notinblacklist")
 
-    sql.update(table, "blacklist", new_data, "user_id", member, exception="noroom")
+    sql.update(table, "blacklist", object, "user_id", member, exception="noroom")
 
-def unban_member(): #To be done
-    pass
 
 def exists(uuid):
     data = sql.select(table, "uuid", uuid, safe=True)
