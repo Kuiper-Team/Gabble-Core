@@ -1,6 +1,5 @@
 import json
 from base64 import b64encode
-from hashlib import sha256
 
 import database.conversations as conversations
 import database.rooms as rooms
